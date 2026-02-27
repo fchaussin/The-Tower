@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Tower - MVP</title>
+</head>
+<body>
+<div id="ui-layer">
+  <div id="main-menu" class="menu-container">
+    <h1>THE TOWER</h1>
+    <div class="input-group">
+      <label for="playerName">Player Name:</label>
+      <input type="text" id="playerName" placeholder="Enter your name" maxlength="15" />
+    </div>
+    <button id="startBtn" class="btn">START GAME</button>
+    
+    <div class="leaderboard">
+      <h2>Top Scores</h2>
+      <ul id="scoreList"></ul>
+    </div>
+  </div>
+  
+  <div id="game-over-menu" class="menu-container hidden">
+    <h1>GAME OVER</h1>
+    <p id="finalScore">Score: 0</p>
+    <p id="finalLevel">Level: 1</p>
+    <button id="restartBtn" class="btn">PLAY AGAIN</button>
+  </div>
+</div>
+<canvas id="gameCanvas"></canvas>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
+
