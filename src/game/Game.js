@@ -1,11 +1,15 @@
 import { Tower } from './Tower.js';
-import { getLevelConfig } from './levels.js';
+import { getLevelConfig } from './Levels.js';
 import { Shockwave } from './Shockwave.js';
 import { TextEffect } from './TextEffect.js';
 import { DamageFeature } from './features/DamageFeature.js';
 import { RangeFeature } from './features/RangeFeature.js';
 import { CooldownFeature } from './features/CooldownFeature.js';
 import { SpeedFeature } from './features/SpeedFeature.js';
+import { SplashFeature } from './features/SplashFeature.js';
+import { ChainFeature } from './features/ChainFeature.js';
+import { PoisonFeature } from './features/PoisonFeature.js';
+import { auth, db, provider, signInWithPopup, onAuthStateChanged, collection, addDoc, getDocs, query, orderBy, limit, isFirebaseEnabled } from '../services/firebase.js';
 
 export class Game {
   constructor(canvas) {
@@ -13,7 +17,7 @@ export class Game {
     this.ctx = canvas.getContext('2d');
     this.state = 'MENU';
     this.score = 0;
-    this.soundEnabled = true;
+    this.soundEnabled = false;
     this.audioCtx = null;
     this.playerName = localStorage.getItem('tower_playerName') || '';
     this.topScores = JSON.parse(localStorage.getItem('tower_topScores')) || [];
@@ -37,7 +41,40 @@ export class Game {
     this.playerNameInput = document.getElementById('playerName');
     this.scoreListEl = document.getElementById('scoreList');
     
+    this.loginBtn = document.getElementById('loginBtn');
+    this.userInfo = document.getElementById('userInfo');
+    this.authSection = document.getElementById('auth-section');
+    
     this.playerNameInput.value = this.playerName;
+    
+    if (isFirebaseEnabled && this.authSection) {
+      this.authSection.classList.remove('hidden');
+      
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          this.loginBtn.classList.add('hidden');
+          this.userInfo.classList.remove('hidden');
+          this.userInfo.innerText = `Logged in as: ${user.email}`;
+          
+          // Extract username before @
+          const username = user.email.split('@')[0];
+          this.playerNameInput.value = username;
+          this.playerName = username;
+          localStorage.setItem('tower_playerName', this.playerName);
+        } else {
+          this.loginBtn.classList.remove('hidden');
+          this.userInfo.classList.add('hidden');
+        }
+      });
+      
+      this.loginBtn.addEventListener('click', async () => {
+        try {
+          await signInWithPopup(auth, provider);
+        } catch (error) {
+          console.error("Login failed", error);
+        }
+      });
+    }
     
     document.getElementById('startBtn').addEventListener('click', () => {
       this.playerName = this.playerNameInput.value.trim() || 'Anonymous';
@@ -64,21 +101,61 @@ export class Game {
     return this.formatter.format(num);
   }
   
-  updateLeaderboard() {
+  formatTime(ms) {
+    let totalSeconds = Math.floor(ms / 1000);
+    let minutes = Math.floor(totalSeconds / 60);
+    let seconds = totalSeconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  }
+  
+  async updateLeaderboard() {
     if (!this.scoreListEl) return;
+    
+    let scoresToDisplay = this.topScores; // Fallback to local storage
+    
+    if (isFirebaseEnabled) {
+      try {
+        const q = query(collection(db, 'scores'), orderBy('score', 'desc'), limit(10));
+        const querySnapshot = await getDocs(q);
+        const fbScores = [];
+        querySnapshot.forEach((doc) => {
+          fbScores.push(doc.data());
+        });
+        if (fbScores.length > 0) {
+          scoresToDisplay = fbScores;
+        }
+      } catch (e) {
+        console.error("Error fetching scores from Firebase, falling back to local", e);
+      }
+    }
+    
     this.scoreListEl.innerHTML = '';
-    this.topScores.forEach((entry, index) => {
+    scoresToDisplay.forEach((entry, index) => {
       const li = document.createElement('li');
       li.innerHTML = `<span>${index + 1}. ${entry.name}</span><span>${this.formatNumber(entry.score)}</span>`;
       this.scoreListEl.appendChild(li);
     });
   }
   
-  saveScore() {
+  async saveScore() {
+    // Always save locally as fallback/offline
     this.topScores.push({ name: this.playerName, score: this.score });
     this.topScores.sort((a, b) => b.score - a.score);
     this.topScores = this.topScores.slice(0, 10); // Keep top 10
     localStorage.setItem('tower_topScores', JSON.stringify(this.topScores));
+    
+    if (isFirebaseEnabled) {
+      try {
+        await addDoc(collection(db, 'scores'), {
+          name: this.playerName,
+          score: this.score,
+          timestamp: new Date().toISOString()
+        });
+      } catch (e) {
+        console.error("Error saving score to Firebase", e);
+      }
+    }
+    
     this.updateLeaderboard();
   }
   resize() {
@@ -91,9 +168,10 @@ export class Game {
     this.pauseBox = { x: this.width - 50, y: 20, w: 30, h: 30 };
     this.soundBox = { x: this.width - 90, y: 20, w: 30, h: 30 };
     if (this.upgrades) {
-      let startX = this.width / 2 - (this.upgrades.length * 70) / 2;
+      let totalWidth = this.upgrades.length * 60; // 50px width + 10px gap
+      let startX = this.width / 2 - totalWidth / 2;
       this.upgrades.forEach((upg, i) => {
-        upg.box = { x: startX + i * 70, y: this.height - 80, w: 50, h: 50 };
+        upg.box = { x: startX + i * 60, y: this.height - 80, w: 50, h: 50 };
       });
     }
   }
@@ -116,7 +194,10 @@ export class Game {
       new DamageFeature(),
       new CooldownFeature(),
       new SpeedFeature(),
-      new RangeFeature()
+      new RangeFeature(),
+      new SplashFeature(),
+      new ChainFeature(),
+      new PoisonFeature()
     ];
     this.resize();
   }
@@ -124,31 +205,13 @@ export class Game {
     const config = getLevelConfig(this.level);
     
     this.currency += config.bonusCurrency || 0;
-    this.spawnInterval = config.spawnInterval || 2000;
-    this.lastSpawnTime = this.time; // Reset spawn timer for the new level
+    this.levelEvents = config.events;
+    this.levelStartTime = this.time;
+    this.currentEventIndex = 0;
     
     this.spawnTextEffect(this.width / 2, this.height / 2 - 100, `LEVEL ${this.level}`, '#0df', 64, 2.5);
     if (config.bonusCurrency > 0) {
       this.spawnTextEffect(this.width / 2, this.height / 2 - 40, `+${this.formatNumber(config.bonusCurrency)} Bonus!`, '#fd0', 32, 2.5);
-    }
-    
-    this.levelQueue = [];
-    let counts = config.enemies.map(e => ({ type: e.type, count: e.count }));
-    
-    let total = counts.reduce((sum, c) => sum + c.count, 0);
-    for (let i = 0; i < total; i++) {
-      let maxRatio = -1;
-      let picked = null;
-      for (let c of counts) {
-        if (c.count > 0 && c.count > maxRatio) {
-          maxRatio = c.count;
-          picked = c;
-        }
-      }
-      if (picked) {
-        this.levelQueue.push(picked.type);
-        picked.count--;
-      }
     }
   }
   gameOver() {
@@ -259,10 +322,7 @@ export class Game {
       }
     }
   }
-  spawnEnemy() {
-    if (this.levelQueue.length === 0) return;
-    let EnemyClass = this.levelQueue.shift();
-    
+  spawnEnemy(EnemyClass) {
     this.spawnAngle = (this.spawnAngle || 0) + Math.PI * 0.37;
     let dist = Math.max(this.width, this.height);
     let ex = this.width / 2 + Math.cos(this.spawnAngle) * dist;
@@ -285,12 +345,15 @@ export class Game {
       if (this.state === 'PLAYING') {
         this.time += dt * 1000;
         
-        if (this.levelQueue.length > 0) {
-          if (this.time - this.lastSpawnTime > this.spawnInterval) {
-            this.spawnEnemy();
-            this.lastSpawnTime = this.time;
-          }
-        } else if (this.enemies.length === 0) {
+        let levelTime = this.time - this.levelStartTime;
+        
+        while (this.currentEventIndex < this.levelEvents.length && 
+               levelTime >= this.levelEvents[this.currentEventIndex].time) {
+          this.spawnEnemy(this.levelEvents[this.currentEventIndex].type);
+          this.currentEventIndex++;
+        }
+        
+        if (this.currentEventIndex >= this.levelEvents.length && this.enemies.length === 0) {
           this.level++;
           this.startLevel();
         }
@@ -361,6 +424,11 @@ export class Game {
       this.ctx.fillStyle = '#fff';
       this.ctx.fillRect(this.pauseBox.x + 8, this.pauseBox.y + 8, 4, 14);
       this.ctx.fillRect(this.pauseBox.x + 18, this.pauseBox.y + 8, 4, 14);
+
+      this.ctx.font = '12px monospace';
+      this.ctx.textAlign = 'center';
+      this.ctx.fillText(this.formatTime(this.time), this.pauseBox.x + this.pauseBox.w / 2, this.pauseBox.y + this.pauseBox.h + 16);
+      this.ctx.textAlign = 'left';
 
       this.ctx.strokeRect(this.soundBox.x, this.soundBox.y, this.soundBox.w, this.soundBox.h);
       this.ctx.beginPath();

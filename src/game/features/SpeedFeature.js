@@ -2,11 +2,19 @@ import { TowerFeature } from './TowerFeature.js';
 
 export class SpeedFeature extends TowerFeature {
   constructor() {
-    super('speed', 5000);
+    super({
+      id: 'speed',
+      baseCost: 100,
+      costMultiplier: 1.15,
+      costAddition: 5,
+      baseIntensity: 10,
+      intensityMultiplier: 1,
+      intensityAddition: 2
+    });
   }
 
-  apply(tower) {
-    tower.projectileSpeed += 50;
+  apply(tower, intensity) {
+    tower.projectileSpeed += intensity;
   }
 
   draw(ctx, x, y, w, h, color) {

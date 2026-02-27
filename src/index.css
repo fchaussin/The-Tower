@@ -110,6 +110,7 @@ canvas {
 #scoreList {
   list-style: none;
   padding: 0;
+  padding-right: 1em;
   margin: 0;
   max-height: 150px;
   overflow-y: auto;
@@ -124,4 +125,29 @@ canvas {
 
 .hidden {
   display: none !important;
+}
+
+/* Minimalist Dark Theme Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #333 transparent;
 }

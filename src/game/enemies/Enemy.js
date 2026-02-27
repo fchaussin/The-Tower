@@ -12,6 +12,9 @@ export class Enemy extends Entity {
     this.color = color;
     this.shape = shape;
     this.style = style;
+    this.poisonDamage = 0;
+    this.poisonDuration = 0;
+    this.poisonTimer = 0;
     this.updateVelocity();
   }
   updateVelocity() {
@@ -22,6 +25,20 @@ export class Enemy extends Entity {
     this.vy = (dy / dist) * this.speed;
   }
   update(dt, game) {
+    if (this.poisonDuration > 0) {
+      this.poisonDuration -= dt;
+      this.poisonTimer += dt;
+      if (this.poisonTimer >= 1) { // Apply poison damage every 1 second
+        this.health -= this.poisonDamage;
+        this.poisonTimer = 0;
+        
+        // Visual effect for poison tick
+        if (game.spawnShockwave) {
+          game.spawnShockwave(this.x, this.y, '#0f0', this.radius + 5, 0.2, null, 2);
+        }
+      }
+    }
+
     this.x += this.vx * dt;
     this.y += this.vy * dt;
     let dx = game.tower.x - this.x;

@@ -1,6 +1,6 @@
 import { Enemy } from './Enemy.js';
 
-export class TankEnemy extends Enemy {
+export class E006_Tank extends Enemy {
   constructor(x, y, targetX, targetY) {
     super(x, y, targetX, targetY, 18, 25, 20, '#00f', 'hexagon', 'fill');
   }

@@ -2,11 +2,20 @@ import { TowerFeature } from './TowerFeature.js';
 
 export class CooldownFeature extends TowerFeature {
   constructor() {
-    super('cooldown', 500);
+    super({
+      id: 'cooldown',
+      baseCost: 10,
+      costMultiplier: 1.3,
+      costAddition: 5,
+      baseIntensity: 0.85,
+      intensityMultiplier: 1,
+      intensityAddition: 0.01
+    });
   }
 
-  apply(tower) {
-    tower.cooldown = Math.max(50, tower.cooldown - 50);
+  apply(tower, intensity) {
+    // Diminishing returns: reduces cooldown by intensity each time
+    tower.cooldown = Math.max(20, tower.cooldown * intensity);
   }
 
   draw(ctx, x, y, w, h, color) {

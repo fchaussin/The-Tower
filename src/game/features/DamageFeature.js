@@ -2,11 +2,19 @@ import { TowerFeature } from './TowerFeature.js';
 
 export class DamageFeature extends TowerFeature {
   constructor() {
-    super('damage', 5);
+    super({
+      id: 'damage',
+      baseCost: 5,
+      costMultiplier: 1.3,
+      costAddition: 2,
+      baseIntensity: 1,
+      intensityMultiplier: 1,
+      intensityAddition: 0.5
+    });
   }
 
-  apply(tower) {
-    tower.damage += 1;
+  apply(tower, intensity) {
+    tower.damage += intensity;
   }
 
   draw(ctx, x, y, w, h, color) {

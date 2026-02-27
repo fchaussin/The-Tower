@@ -1,6 +1,6 @@
 import { Enemy } from './Enemy.js';
 
-export class RageEnemy extends Enemy {
+export class E005_Rage extends Enemy {
   constructor(x, y, targetX, targetY) {
     super(x, y, targetX, targetY, 12, 10, 35, '#f80', 'star', 'fill');
     this.enraged = false;

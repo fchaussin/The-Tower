@@ -2,11 +2,20 @@ import { TowerFeature } from './TowerFeature.js';
 
 export class RangeFeature extends TowerFeature {
   constructor() {
-    super('range', 50000);
+    super({
+      id: 'range',
+      baseCost: 300,
+      costMultiplier: 1.2,
+      costAddition: 5,
+      baseIntensity: 20,
+      intensityMultiplier: 1,
+      intensityAddition: 2
+    });
   }
 
-  apply(tower) {
-    tower.range += 20;
+  apply(tower, intensity) {
+    tower.range += intensity;
+    tower.highlightRangeTimer = 500;
   }
 
   draw(ctx, x, y, w, h, color) {

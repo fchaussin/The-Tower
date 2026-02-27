@@ -13,3 +13,19 @@ if ('serviceWorker' in navigator) {
 
 const canvas = document.getElementById('gameCanvas');
 new Game(canvas);
+
+// Remove splash screen once all assets (including fonts) are fully loaded
+Promise.all([
+  new Promise(resolve => {
+    if (document.readyState === 'complete') resolve();
+    else window.addEventListener('load', resolve);
+  }),
+  document.fonts ? document.fonts.ready : Promise.resolve()
+]).then(() => {
+  const splash = document.getElementById('splash-screen');
+  if (splash) {
+    // Use transitionend instead of setTimeout to perfectly sync with CSS
+    splash.addEventListener('transitionend', () => splash.remove());
+    splash.style.opacity = '0';
+  }
+});

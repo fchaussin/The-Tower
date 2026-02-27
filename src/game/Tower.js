@@ -10,8 +10,12 @@ export class Tower extends Entity {
     this.cooldown = 500;
     this.projectileSpeed = 400;
     this.lastFireTime = 0;
+    this.highlightRangeTimer = 0;
   }
   update(dt, game) {
+    if (this.highlightRangeTimer > 0) {
+      this.highlightRangeTimer -= dt;
+    }
     if (game.time - this.lastFireTime > this.cooldown) {
       let target = null;
       let minDst = Infinity;
@@ -25,7 +29,7 @@ export class Tower extends Entity {
         }
       }
       if (target) {
-        game.projectiles.push(new Projectile(this.x, this.y, target, this.damage, this.projectileSpeed));
+        game.projectiles.push(new Projectile(this.x, this.y, target, this.damage, this.projectileSpeed, this));
         this.lastFireTime = game.time;
         game.playSound('shoot');
       }
@@ -34,8 +38,14 @@ export class Tower extends Entity {
   draw(ctx) {
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.range, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-    ctx.lineWidth = 1;
+    if (this.highlightRangeTimer > 0) {
+      let alpha = 0.1 + 0.7 * (this.highlightRangeTimer / 500);
+      ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+      ctx.lineWidth = 1 + 2 * (this.highlightRangeTimer / 500);
+    } else {
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.lineWidth = 1;
+    }
     ctx.stroke();
     
     ctx.beginPath();
