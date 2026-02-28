@@ -168,10 +168,22 @@ export class Game {
     this.pauseBox = { x: this.width - 50, y: 20, w: 30, h: 30 };
     this.soundBox = { x: this.width - 90, y: 20, w: 30, h: 30 };
     if (this.upgrades) {
-      let totalWidth = this.upgrades.length * 60; // 50px width + 10px gap
+      let maxBoxSize = 50;
+      let gap = 10;
+      let availableWidth = this.width - 20; // 10px padding on each side
+      let totalNeeded = this.upgrades.length * (maxBoxSize + gap) - gap;
+      
+      let boxSize = maxBoxSize;
+      if (totalNeeded > availableWidth) {
+        gap = 5;
+        boxSize = (availableWidth - (this.upgrades.length - 1) * gap) / this.upgrades.length;
+      }
+      
+      let totalWidth = this.upgrades.length * (boxSize + gap) - gap;
       let startX = this.width / 2 - totalWidth / 2;
+      
       this.upgrades.forEach((upg, i) => {
-        upg.box = { x: startX + i * 60, y: this.height - 80, w: 50, h: 50 };
+        upg.box = { x: startX + i * (boxSize + gap), y: this.height - boxSize - 30, w: boxSize, h: boxSize };
       });
     }
   }
@@ -412,9 +424,10 @@ export class Game {
         this.ctx.strokeRect(upg.box.x, upg.box.y, upg.box.w, upg.box.h);
         upg.draw(this.ctx, upg.box.x, upg.box.y, upg.box.w, upg.box.h, color);
         this.ctx.fillStyle = color;
-        this.ctx.font = '14px monospace';
+        let fontSize = Math.max(10, Math.floor(upg.box.w * 0.28));
+        this.ctx.font = `${fontSize}px monospace`;
         this.ctx.textAlign = 'center';
-        this.ctx.fillText(this.formatNumber(upg.cost), upg.box.x + upg.box.w / 2, upg.box.y + upg.box.h + 18);
+        this.ctx.fillText(this.formatNumber(upg.cost), upg.box.x + upg.box.w / 2, upg.box.y + upg.box.h + fontSize + 4);
       });
       this.ctx.textAlign = 'left';
 

@@ -13,8 +13,12 @@ export class Tower extends Entity {
     this.highlightRangeTimer = 0;
   }
   update(dt, game) {
+    let safeDt = !isFinite(dt) || dt < 0 ? 0 : dt;
+    this.pulseTimer = (this.pulseTimer || 0) + safeDt;
+    if (this.pulseTimer > 2) this.pulseTimer %= 2;
+
     if (this.highlightRangeTimer > 0) {
-      this.highlightRangeTimer -= dt;
+      this.highlightRangeTimer -= dt * 1000;
     }
     if (game.time - this.lastFireTime > this.cooldown) {
       let target = null;
@@ -36,6 +40,23 @@ export class Tower extends Entity {
     }
   }
   draw(ctx) {
+    // Base range background
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.range, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
+    ctx.fill();
+
+    // Pulse effect
+    if (this.pulseTimer !== undefined) {
+      let progress = Math.max(0, Math.min(1, this.pulseTimer / 2));
+      let pulseRadius = Math.max(0, this.range * progress);
+      let pulseAlpha = Math.max(0, 0.15 * (1 - progress));
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, pulseRadius, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, 255, 255, ${pulseAlpha})`;
+      ctx.fill();
+    }
+
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.range, 0, Math.PI * 2);
     if (this.highlightRangeTimer > 0) {
