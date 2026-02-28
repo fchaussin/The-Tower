@@ -6,9 +6,11 @@ export class TowerFeature {
     costAddition = 2,
     baseIntensity = 1,
     intensityMultiplier = 1,
-    intensityAddition = 0
+    intensityAddition = 0,
+    color = '#fff'
   }) {
     this.id = id;
+    this.color = color;
     this.cost = baseCost;
     this.costMultiplier = costMultiplier;
     this.costAddition = costAddition;

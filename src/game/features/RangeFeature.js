@@ -9,7 +9,8 @@ export class RangeFeature extends TowerFeature {
       costAddition: 5,
       baseIntensity: 20,
       intensityMultiplier: 1,
-      intensityAddition: 2
+      intensityAddition: 2,
+      color: '#0ff'
     });
   }
 

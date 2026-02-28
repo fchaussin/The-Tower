@@ -9,7 +9,8 @@ export class PoisonFeature extends TowerFeature {
       costAddition: 10,
       baseIntensity: 0.1,
       intensityMultiplier: 1,
-      intensityAddition: 0.05
+      intensityAddition: 0.05,
+      color: '#0f0'
     });
   }
 
@@ -19,11 +20,37 @@ export class PoisonFeature extends TowerFeature {
   }
 
   draw(ctx, x, y, w, h, color) {
-    ctx.fillStyle = color;
+    ctx.save();
+    
+    // Flask path
     ctx.beginPath();
-    ctx.moveTo(x + w / 2, y + 10);
-    ctx.bezierCurveTo(x + w - 5, y + h / 2, x + w - 10, y + h - 5, x + w / 2, y + h - 5);
-    ctx.bezierCurveTo(x + 10, y + h - 5, x + 5, y + h / 2, x + w / 2, y + 10);
-    ctx.fill();
+    // Rim
+    ctx.moveTo(x + w * 0.35, y + h * 0.15);
+    ctx.lineTo(x + w * 0.65, y + h * 0.15);
+    ctx.lineTo(x + w * 0.65, y + h * 0.2);
+    ctx.lineTo(x + w * 0.6, y + h * 0.2);
+    // Neck
+    ctx.lineTo(x + w * 0.6, y + h * 0.4);
+    // Body
+    ctx.lineTo(x + w * 0.85, y + h * 0.85);
+    ctx.lineTo(x + w * 0.15, y + h * 0.85);
+    ctx.lineTo(x + w * 0.4, y + h * 0.4);
+    // Neck left
+    ctx.lineTo(x + w * 0.4, y + h * 0.2);
+    // Rim left
+    ctx.lineTo(x + w * 0.35, y + h * 0.2);
+    ctx.closePath();
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.clip();
+
+    // Liquid
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y + h * 0.55, w, h * 0.45);
+
+    ctx.restore();
   }
 }

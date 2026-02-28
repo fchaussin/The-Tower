@@ -9,7 +9,8 @@ export class CooldownFeature extends TowerFeature {
       costAddition: 5,
       baseIntensity: 0.85,
       intensityMultiplier: 1,
-      intensityAddition: 0.01
+      intensityAddition: 0.01,
+      color: '#fff'
     });
   }
 

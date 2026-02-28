@@ -47,6 +47,36 @@ export class Projectile extends Entity {
       // Target died before projectile reached it, just fly straight
       this.x += this.vx * dt;
       this.y += this.vy * dt;
+      
+      // Check collision with other enemies (optimized with squared distance)
+      for (let i = 0; i < game.enemies.length; i++) {
+        let e = game.enemies[i];
+        if (!e.markedForDeletion) {
+          let dx = e.x - this.x;
+          let dy = e.y - this.y;
+          let rSum = this.radius + e.radius;
+          if (dx * dx + dy * dy < rSum * rSum) {
+            this.applyDamageAndEffects(e, game);
+            
+            // Handle Chain
+            if (this.chainCountRemaining > 0) {
+              let nextTarget = this.findChainTarget(game);
+              if (nextTarget) {
+                this.target = nextTarget;
+                this.chainedTo.add(nextTarget);
+                this.chainCountRemaining--;
+                this.x = e.x;
+                this.y = e.y;
+                return;
+              }
+            }
+            
+            this.markedForDeletion = true;
+            return;
+          }
+        }
+      }
+
       if (this.x < 0 || this.x > game.width || this.y < 0 || this.y > game.height) {
         this.markedForDeletion = true;
       }
@@ -59,7 +89,7 @@ export class Projectile extends Entity {
   
   applyDamageAndEffects(target, game) {
     target.health -= this.damage;
-    game.playSound('hit');
+    game.audioManager.playSound('hit');
     
     // Splash Damage
     if (this.tower && this.tower.splashRadius > 0) {

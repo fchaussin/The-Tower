@@ -9,7 +9,8 @@ export class SplashFeature extends TowerFeature {
       costAddition: 10,
       baseIntensity: 0.5,
       intensityMultiplier: 1,
-      intensityAddition: 0.2
+      intensityAddition: 0.2,
+      color: '#f80'
     });
   }
 

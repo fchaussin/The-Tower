@@ -9,7 +9,8 @@ export class DamageFeature extends TowerFeature {
       costAddition: 2,
       baseIntensity: 1,
       intensityMultiplier: 1,
-      intensityAddition: 0.5
+      intensityAddition: 0.5,
+      color: '#f00'
     });
   }
 

@@ -36,6 +36,23 @@
     animation: spin 1s linear infinite;
     margin-bottom: 20px;
   }
+  .spinner-small {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #0df;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  .score-loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 20px 0;
+    color: #888;
+    font-size: 14px;
+  }
   @keyframes spin {
     to { transform: rotate(360deg); }
   }
@@ -59,11 +76,19 @@
       <label for="playerName">Player Name:</label>
       <input type="text" id="playerName" placeholder="Enter your name" maxlength="15" />
     </div>
-    <button id="startBtn" class="btn">START GAME</button>
+    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+      <button id="startBtn" class="btn" style="flex: 1;">START GAME</button>
+      <button id="helpBtn" class="btn" style="width: 50px; padding: 10px;">?</button>
+    </div>
+    <button id="fullscreenBtn" class="btn" style="margin-bottom: 20px; font-size: 14px; background: #333;">ENTER FULL SCREEN</button>
     
     <div class="leaderboard">
       <h2>Top Scores</h2>
-      <ul id="scoreList"></ul>
+      <div id="scoreLoader" class="score-loader">
+        <div class="spinner-small"></div>
+        <span>Loading scores...</span>
+      </div>
+      <ul id="scoreList" class="hidden"></ul>
     </div>
   </div>
   
@@ -71,7 +96,45 @@
     <h1>GAME OVER</h1>
     <p id="finalScore">Score: 0</p>
     <p id="finalLevel">Level: 1</p>
-    <button id="restartBtn" class="btn">PLAY AGAIN</button>
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+      <button id="restartBtn" class="btn">PLAY AGAIN</button>
+      <button id="mainMenuBtn" class="btn" style="background: #333;">MAIN MENU</button>
+    </div>
+  </div>
+
+  <div id="help-modal" class="menu-container hidden" style="max-height: 80vh; overflow-y: auto;">
+    <h2>Tower Upgrades</h2>
+    <div style="text-align: left; margin-top: 20px; font-size: 14px; line-height: 1.5;">
+      <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+        <canvas id="icon-damage" width="30" height="30"></canvas>
+        <div><strong>Damage:</strong> Increases the damage dealt by each projectile.</div>
+      </div>
+      <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+        <canvas id="icon-cooldown" width="30" height="30"></canvas>
+        <div><strong>Cooldown:</strong> Reduces the time between shots.</div>
+      </div>
+      <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+        <canvas id="icon-speed" width="30" height="30"></canvas>
+        <div><strong>Speed:</strong> Increases the firing rate of the tower.</div>
+      </div>
+      <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+        <canvas id="icon-range" width="30" height="30"></canvas>
+        <div><strong>Range:</strong> Increases the targeting radius of the tower.</div>
+      </div>
+      <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+        <canvas id="icon-splash" width="30" height="30"></canvas>
+        <div><strong>Splash:</strong> Projectiles deal area-of-effect damage on impact.</div>
+      </div>
+      <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+        <canvas id="icon-chain" width="30" height="30"></canvas>
+        <div><strong>Chain:</strong> Projectiles bounce to additional nearby enemies.</div>
+      </div>
+      <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+        <canvas id="icon-poison" width="30" height="30"></canvas>
+        <div><strong>Poison:</strong> Applies damage over time to enemies hit.</div>
+      </div>
+    </div>
+    <button id="closeHelpBtn" class="btn" style="margin-top: 20px;">CLOSE</button>
   </div>
 </div>
 <canvas id="gameCanvas"></canvas>

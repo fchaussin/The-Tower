@@ -9,7 +9,8 @@ export class ChainFeature extends TowerFeature {
       costAddition: 20,
       baseIntensity: 1,
       intensityMultiplier: 1,
-      intensityAddition: 0.5
+      intensityAddition: 0.5,
+      color: '#f0f'
     });
   }
 

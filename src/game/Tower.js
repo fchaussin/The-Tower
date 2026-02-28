@@ -35,7 +35,7 @@ export class Tower extends Entity {
       if (target) {
         game.projectiles.push(new Projectile(this.x, this.y, target, this.damage, this.projectileSpeed, this));
         this.lastFireTime = game.time;
-        game.playSound('shoot');
+        game.audioManager.playSound('shoot');
       }
     }
   }

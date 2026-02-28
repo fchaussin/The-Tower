@@ -49,7 +49,7 @@ export class Enemy extends Entity {
       let angle = Math.atan2(dy, dx);
       this.x -= Math.cos(angle) * overlap;
       this.y -= Math.sin(angle) * overlap;
-      game.playSound('gameover');
+      game.audioManager.playSound('gameover');
       game.gameOver();
     }
     if (this.health <= 0) {

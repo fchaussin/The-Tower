@@ -9,7 +9,8 @@ export class SpeedFeature extends TowerFeature {
       costAddition: 5,
       baseIntensity: 10,
       intensityMultiplier: 1,
-      intensityAddition: 2
+      intensityAddition: 2,
+      color: '#ff0'
     });
   }
 
