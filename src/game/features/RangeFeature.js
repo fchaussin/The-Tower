@@ -5,8 +5,8 @@ export class RangeFeature extends TowerFeature {
     super({
       id: 'range',
       baseCost: 300,
-      costMultiplier: 1.2,
-      costAddition: 5,
+      costMultiplier: 3,
+      costAddition: 50,
       baseIntensity: 20,
       intensityMultiplier: 1,
       intensityAddition: 2,

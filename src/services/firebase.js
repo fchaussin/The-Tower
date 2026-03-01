@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp, writeBatch, doc } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -34,6 +34,7 @@ if (firebaseConfig.apiKey) {
 }
 
 const SCORES_COLLECTION = 'itd_scores';
+const LEADERBOARD_COLLECTION = 'itd_leaderboard';
 
 export { 
   auth, 
@@ -49,5 +50,8 @@ export {
   limit, 
   serverTimestamp,
   isFirebaseEnabled,
-  SCORES_COLLECTION
+  writeBatch, 
+  doc,
+  SCORES_COLLECTION,
+  LEADERBOARD_COLLECTION
 };

@@ -5,8 +5,8 @@ export class SpeedFeature extends TowerFeature {
     super({
       id: 'speed',
       baseCost: 100,
-      costMultiplier: 1.15,
-      costAddition: 5,
+      costMultiplier: 1.5,
+      costAddition: 30,
       baseIntensity: 10,
       intensityMultiplier: 1,
       intensityAddition: 2,

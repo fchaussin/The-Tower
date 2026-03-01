@@ -5,8 +5,8 @@ export class SplashFeature extends TowerFeature {
     super({
       id: 'splash',
       baseCost: 100,
-      costMultiplier: 1.4,
-      costAddition: 10,
+      costMultiplier: 1.8,
+      costAddition: 50,
       baseIntensity: 0.5,
       intensityMultiplier: 1,
       intensityAddition: 0.2,

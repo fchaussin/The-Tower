@@ -4,12 +4,12 @@ export class PoisonFeature extends TowerFeature {
   constructor() {
     super({
       id: 'poison',
-      baseCost: 100,
-      costMultiplier: 1.3,
-      costAddition: 10,
+      baseCost: 200,
+      costMultiplier: 2.5,
+      costAddition: 2.5,
       baseIntensity: 0.1,
       intensityMultiplier: 1,
-      intensityAddition: 0.05,
+      intensityAddition: 0.2,
       color: '#0f0'
     });
   }

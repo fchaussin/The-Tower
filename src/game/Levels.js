@@ -3,34 +3,34 @@ import { EnemyList } from './enemies/EnemyList.js';
 // Configuration object to easily tweak the hardness progression
 export const DIFFICULTY_CONFIG = {
   // Exponential Growth Multipliers
-  swarmCountMultiplier: 1.08,    // Exponential growth for swarm numbers (was 1.15)
-  spawnSpeedMultiplier: 0.95,    // Exponential decrease for spawn intervals (was 0.9/0.95)
+  swarmCountMultiplier: 1.08,
+  spawnSpeedMultiplier: 0.95,
   
   // Linear Growth Multipliers (added per level)
-  coreCountLinear: 1.2,          // Linear growth for core enemies per level (was 1.5)
-  eliteCountLinear: 0.4,         // Linear growth for elite enemies per level (was 0.5)
+  coreCountLinear: 1.1,
+  eliteCountLinear: 0.4,
   
   // Loop Multiplier (extra difficulty per full 57-level loop)
   loopDifficultyMultiplier: 0.5, 
   
   // Base Enemy Counts (Level 1)
-  baseSwarmCount: 12,            // Was 15
-  baseCoreCount: 5,              // Was 5
-  baseEliteCount: 2,             // Was 2
+  baseSwarmCount: 12,
+  baseCoreCount: 5,
+  baseEliteCount: 2,
   
   // Base Spawn Intervals (ms)
-  baseSwarmInterval: 500,        // Was 400
-  baseCoreInterval: 1000,        // Was 800
-  baseEliteInterval: 1500,       // Was 1000
+  baseSwarmInterval: 500,
+  baseCoreInterval: 1000,
+  baseEliteInterval: 1500,
   
   // Minimum Spawn Intervals (ms) - Speed limits to prevent instant spawns
-  minSwarmInterval: 40,          // Was 20
-  minCoreInterval: 150,          // Was 100
-  minEliteInterval: 300,         // Was 200
+  minSwarmInterval: 40,
+  minCoreInterval: 150,
+  minEliteInterval: 300,
   
   // Currency and Timings
-  baseBonusCurrency: 50,
-  currencyPerLevel: 20,
+  baseBonusCurrency: 80,
+  currencyPerLevel: 50,
   baseWaitTime: 2000,
   assaultWaitTime: 3000,
   bossWaitTime: 4000
@@ -158,6 +158,6 @@ export function getLevelConfig(level) {
   
   return {
     events: builder.build(),
-    bonusCurrency: Math.floor(vary(cfg.baseBonusCurrency + (level - 1) * cfg.currencyPerLevel))
+    bonusCurrency: Math.floor(cfg.baseBonusCurrency + (level - 1) * cfg.currencyPerLevel)
   };
 }

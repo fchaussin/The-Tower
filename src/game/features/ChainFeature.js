@@ -4,9 +4,9 @@ export class ChainFeature extends TowerFeature {
   constructor() {
     super({
       id: 'chain',
-      baseCost: 200,
-      costMultiplier: 1.5,
-      costAddition: 20,
+      baseCost: 100,
+      costMultiplier: 2.5,
+      costAddition: 50,
       baseIntensity: 1,
       intensityMultiplier: 1,
       intensityAddition: 0.5,

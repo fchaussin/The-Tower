@@ -4,7 +4,7 @@ export class CooldownFeature extends TowerFeature {
   constructor() {
     super({
       id: 'cooldown',
-      baseCost: 10,
+      baseCost: 20,
       costMultiplier: 1.3,
       costAddition: 5,
       baseIntensity: 0.85,

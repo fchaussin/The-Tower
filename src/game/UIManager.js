@@ -1,4 +1,4 @@
-import { auth, db, provider, signInWithPopup, onAuthStateChanged, collection, addDoc, getDocs, query, orderBy, limit, isFirebaseEnabled, SCORES_COLLECTION, serverTimestamp } from '../services/firebase.js';
+import { auth, db, provider, signInWithPopup, onAuthStateChanged, collection, addDoc, getDocs, query, orderBy, limit, isFirebaseEnabled, SCORES_COLLECTION, LEADERBOARD_COLLECTION, writeBatch, doc, serverTimestamp } from '../services/firebase.js';
 import { DamageFeature } from './features/DamageFeature.js';
 import { RangeFeature } from './features/RangeFeature.js';
 import { CooldownFeature } from './features/CooldownFeature.js';
@@ -7,28 +7,45 @@ import { SplashFeature } from './features/SplashFeature.js';
 import { ChainFeature } from './features/ChainFeature.js';
 import { PoisonFeature } from './features/PoisonFeature.js';
 
+const ICON_GLOBAL = `<svg class="global" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>`;
+const ICON_LOCAL = `<svg class="local" width="10" height="10" viewBox="0 0 32 32" enable-background="new 0 0 32 32"><polygon fill="none" stroke="currentColor" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2" points="31,16 31,19 27,19 27,31 21,31 21,19 11,19 11,31 5,31 5,19 1,19 1,16 16,1 21,6 21,1 27,1 27,12"/></svg>`;
+const DEFAULT_USERNAME = 'Anonymous';
+
 export class UIManager {
   constructor(game) {
     this.game = game;
-    console.log('UIManager constructor running, looking for buttons...');
+    console.log('UIManager constructor running, looking for buttons…');
     this.formatter = new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 });
-    
+
     this.mainMenuEl = document.getElementById('main-menu');
     this.gameOverMenuEl = document.getElementById('game-over-menu');
     this.playerNameInput = document.getElementById('playerName');
     this.scoreListEl = document.getElementById('scoreList');
-    
+
     this.loginBtn = document.getElementById('loginBtn');
     this.userInfo = document.getElementById('userInfo');
     this.authSection = document.getElementById('auth-section');
-    
-    this.playerNameInput.value = this.game.playerName;
+
+    const storedName = localStorage.getItem('tower_playerName');
+    this.game.playerName = storedName ? storedName : DEFAULT_USERNAME;
+
+    if (this.playerNameInput) {
+      this.playerNameInput.value = this.game.playerName;
+    }
   }
 
   setup() {
+    if (this.playerNameInput) {
+      this.playerNameInput.addEventListener('input', (e) => {
+        const val = e.target.value.trim() || DEFAULT_USERNAME;
+        this.game.playerName = val;
+        localStorage.setItem('tower_playerName', val);
+      });
+    }
+
     if (isFirebaseEnabled && this.authSection) {
       this.authSection.classList.remove('hidden');
-      
+
       onAuthStateChanged(auth, (user) => {
         if (user) {
           if (this.loginBtn) this.loginBtn.classList.add('hidden');
@@ -36,17 +53,19 @@ export class UIManager {
             this.userInfo.classList.remove('hidden');
             this.userInfo.innerText = `Logged in as: ${user.displayName}`;
           }
-          
-          const username = user.displayName;
-          if (this.playerNameInput) this.playerNameInput.value = username;
-          this.game.playerName = username;
-          localStorage.setItem('tower_playerName', this.game.playerName);
+
+          if (this.game.playerName === DEFAULT_USERNAME) {
+            const username = user.displayName;
+            if (this.playerNameInput) this.playerNameInput.value = username;
+            this.game.playerName = username;
+            localStorage.setItem('tower_playerName', username);
+          }
         } else {
           if (this.loginBtn) this.loginBtn.classList.remove('hidden');
           if (this.userInfo) this.userInfo.classList.add('hidden');
         }
       });
-      
+
       if (this.loginBtn) {
         this.loginBtn.addEventListener('click', async () => {
           try {
@@ -57,12 +76,10 @@ export class UIManager {
         });
       }
     }
-    
+
     const startBtn = document.getElementById('startBtn');
     if (startBtn) {
       startBtn.addEventListener('click', () => {
-        this.game.playerName = this.playerNameInput ? this.playerNameInput.value.trim() || 'Anonymous' : 'Anonymous';
-        localStorage.setItem('tower_playerName', this.game.playerName);
         if (this.mainMenuEl) this.mainMenuEl.classList.add('hidden');
         this.game.audioManager.init();
         this.game.reset();
@@ -70,7 +87,7 @@ export class UIManager {
         this.game.lastTime = performance.now();
       });
     } else console.warn('startBtn not found');
-    
+
     const restartBtn = document.getElementById('restartBtn');
     if (restartBtn) {
       restartBtn.addEventListener('click', () => {
@@ -87,6 +104,7 @@ export class UIManager {
         if (this.gameOverMenuEl) this.gameOverMenuEl.classList.add('hidden');
         if (this.mainMenuEl) this.mainMenuEl.classList.remove('hidden');
         this.game.state = 'MENU';
+        this.updateLeaderboard();
       });
     } else console.warn('mainMenuBtn not found');
 
@@ -127,15 +145,12 @@ export class UIManager {
     this.renderTowerFeatureIcons();
   }
 
-  renderIcon(canvasId, feature) {
-    const canvas = document.getElementById(canvasId);
-    if (canvas) {
-      const ctx = canvas.getContext('2d');
-      ctx.strokeStyle = feature.color;
-      ctx.lineWidth = 2;
-      ctx.strokeRect(0, 0, canvas.width, canvas.height);
-      feature.draw(ctx, 0, 0, canvas.width, canvas.height, feature.color);
-    }
+  renderIcon(canvas, feature) {
+    const ctx = canvas.getContext('2d');
+    ctx.strokeStyle = feature.color;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(0, 0, canvas.width, canvas.height);
+    feature.draw(ctx, 0, 0, canvas.width, canvas.height, feature.color);
   }
 
   renderTowerFeatureIcons() {
@@ -150,7 +165,10 @@ export class UIManager {
     ];
 
     features.forEach(({ id, feature }) => {
-      this.renderIcon(id, feature);
+      const canvas = document.getElementById(id);
+      if (canvas) {
+        this.renderIcon(canvas, feature);
+      }
     });
   }
 
@@ -177,42 +195,40 @@ export class UIManager {
 
   async updateLeaderboard() {
     if (!this.scoreListEl) return;
-    
+
     const loader = document.getElementById('scoreLoader');
     if (loader) loader.classList.remove('hidden');
     this.scoreListEl.classList.add('hidden');
-    
-    // Ensure local scores have a timestamp and are marked as local
+
     let localScores = (this.game.topScores || []).map(score => ({
       ...score,
-      timestamp: score.timestamp || new Date(0).toISOString(),
+      timestampMs: new Date(score.timestamp || 0).getTime(),
       isLocal: true
     }));
-    
     let fbScores = [];
-    
     if (isFirebaseEnabled) {
       try {
-        const q = query(collection(db, SCORES_COLLECTION), orderBy('score', 'desc'), limit(10));
+        const q = query(collection(db, LEADERBOARD_COLLECTION), orderBy('score', 'desc'), limit(10));
         const querySnapshot = await Promise.race([
           getDocs(q),
           new Promise((_, reject) => setTimeout(() => reject(new Error('Firebase timeout')), 5000))
         ]);
+
         querySnapshot.forEach((doc) => {
           const data = doc.data();
-          let ts = new Date(0).toISOString();
+          let tsMs = 0;
           if (data.timestamp) {
             if (typeof data.timestamp.toMillis === 'function') {
-              ts = new Date(data.timestamp.toMillis()).toISOString();
+              tsMs = data.timestamp.toMillis();
             } else if (data.timestamp.seconds) {
-              ts = new Date(data.timestamp.seconds * 1000).toISOString();
+              tsMs = data.timestamp.seconds * 1000;
             } else {
-              ts = new Date(data.timestamp).toISOString();
+              tsMs = new Date(data.timestamp).getTime();
             }
           }
           fbScores.push({
             ...data,
-            timestamp: ts,
+            timestampMs: tsMs,
             isFirebase: true
           });
         });
@@ -220,23 +236,14 @@ export class UIManager {
         console.warn("Could not fetch scores from Firebase, falling back to local storage.", e.message);
       }
     }
-    
-    // Merge scores
+
     let allScores = [...localScores, ...fbScores];
-    
-    // Sort: Score DESC, then Timestamp ASC (older is better if tied)
     allScores.sort((a, b) => {
-      const scoreA = a.score || 0;
-      const scoreB = b.score || 0;
-      if (scoreB !== scoreA) {
-        return scoreB - scoreA;
-      }
-      const timeA = new Date(a.timestamp).getTime();
-      const timeB = new Date(b.timestamp).getTime();
-      return timeA - timeB;
+      const scoreDiff = (b.score || 0) - (a.score || 0);
+      if (scoreDiff !== 0) return scoreDiff;
+      return a.timestampMs - b.timestampMs;
     });
-    
-    // Deduplicate by name and score to avoid showing the exact same run twice (once from local, once from FB)
+
     const uniqueScores = [];
     const seen = new Set();
     for (const score of allScores) {
@@ -245,67 +252,63 @@ export class UIManager {
         seen.add(key);
         uniqueScores.push(score);
       } else {
-        // If we already have this score, but the new one is from Firebase, we might want to mark the existing one as Firebase too
         const existing = uniqueScores.find(s => `${s.name}_${s.score}` === key);
         if (existing && score.isFirebase) {
           existing.isFirebase = true;
         }
       }
     }
-    
+
     let scoresToDisplay = uniqueScores.slice(0, 50);
-    
     if (loader) loader.classList.add('hidden');
     this.scoreListEl.classList.remove('hidden');
-    
-    this.scoreListEl.innerHTML = '';
+    let htmlStr = '';
     scoresToDisplay.forEach((entry, index) => {
-      const li = document.createElement('li');
-      const nameSpan = document.createElement('span');
-      nameSpan.style.display = 'flex';
-      nameSpan.style.alignItems = 'center';
-      nameSpan.style.gap = '5px';
-      
-      const globeIcon = entry.isFirebase ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.7;"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>` : '';
-      
-      nameSpan.innerHTML = `${index + 1}. ${entry.name || 'Anonymous'} ${globeIcon}`;
-      
-      const scoreSpan = document.createElement('span');
-      scoreSpan.innerText = this.formatNumber(entry.score || 0);
-      
-      li.appendChild(nameSpan);
-      li.appendChild(scoreSpan);
-      this.scoreListEl.appendChild(li);
+      const globeIcon = entry.isFirebase ? ICON_GLOBAL : ICON_LOCAL;
+      htmlStr += `<li>
+        <span style="display: flex; align-items: center; gap: 5px;">
+          ${index + 1}. ${globeIcon} ${entry.name || DEFAULT_USERNAME}
+        </span>
+        <span>${this.formatNumber(entry.score || 0)}</span>
+      </li>`;
     });
+
+    this.scoreListEl.innerHTML = htmlStr;
   }
 
   async saveScore() {
     const clientTimestamp = new Date().toISOString();
-    
-    this.game.topScores.push({ 
-      name: this.game.playerName, 
+
+    this.game.topScores.push({
+      name: this.game.playerName,
       score: this.game.score,
       timestamp: clientTimestamp
     });
     this.game.topScores.sort((a, b) => b.score - a.score);
     this.game.topScores = this.game.topScores.slice(0, 10);
     localStorage.setItem('tower_topScores', JSON.stringify(this.game.topScores));
-    
+
     if (isFirebaseEnabled) {
       try {
         const userId = auth.currentUser?.uid;
-        if (!userId) {
-          throw new Error("Utilisateur non authentifié");
-        }
-        await addDoc(collection(db, SCORES_COLLECTION), {
-          name: String(this.game.playerName),
-          score: Number(this.game.score),
+        if (!userId) throw new Error("Utilisateur non authentifié");
+        const batch = writeBatch(db);
+        const scoreRef = doc(collection(db, SCORES_COLLECTION));
+        const scoreId = scoreRef.id;
+        const leaderboardRef = doc(db, LEADERBOARD_COLLECTION, scoreId);
+        const name = String(this.game.playerName);
+        const score = Number(this.game.score);
+        const ts = serverTimestamp();
+
+        batch.set(scoreRef, {
+          name: name,
+          score: score,
           level: Number(this.game.level),
           balance: Math.floor(Number(this.game.currency)),
           elapsedTime: Number(this.game.time),
           userId: userId,
-          timestamp: serverTimestamp(),
-          client_timestamp: new Date().toISOString(),
+          timestamp: ts,
+          client_timestamp: clientTimestamp,
           towerStats: {
             damage: Number(this.game.tower.damage),
             cooldown: Number(this.game.tower.cooldown),
@@ -316,11 +319,20 @@ export class UIManager {
             poisonDamage: Number(this.game.tower.poisonDamage)
           }
         });
+
+        batch.set(leaderboardRef, {
+          name: name,
+          score: score,
+          timestamp: ts
+        });
+
+        await batch.commit();
+
       } catch (e) {
         console.warn("Could not save score to Firebase, saved locally.", e.message);
       }
     }
-    
+
     this.updateLeaderboard();
   }
 

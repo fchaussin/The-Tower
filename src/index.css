@@ -1,12 +1,17 @@
 @import "tailwindcss";
 
-body, html {
+body,
+html {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100%;
   overflow: hidden;
   background-color: #111;
+}
+
+h1 {
+  font-variant: small-caps;
 }
 
 canvas {
@@ -135,8 +140,12 @@ canvas {
 }
 
 #scoreList li span svg {
-    height: 1.1em;
-    stroke: #0cf;
+  height: 100%;
+  stroke: #fff;
+}
+
+#scoreList li span svg.global {
+  stroke: #0cf;
 }
 
 .hidden {
