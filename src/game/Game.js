@@ -2,6 +2,7 @@ import { Tower } from './Tower.js';
 import { getLevelConfig } from './Levels.js';
 import { Shockwave } from './Shockwave.js';
 import { TextEffect } from './TextEffect.js';
+import { ChainEffect } from './ChainEffect.js';
 import { DamageFeature } from './features/DamageFeature.js';
 import { RangeFeature } from './features/RangeFeature.js';
 import { CooldownFeature } from './features/CooldownFeature.js';
@@ -76,6 +77,7 @@ export class Game {
     this.projectiles = [];
     this.shockwaves = [];
     this.textEffects = [];
+    this.chainEffects = [];
     this.flashes = [];
     this.currency = 0;
     this.score = 0;
@@ -117,8 +119,8 @@ export class Game {
     this.uiManager.showGameOver();
   }
 
-  spawnShockwave(x, y, color, maxRadius = 30, duration = 0.3, target = null, maxAmplitude = 5) {
-    this.shockwaves.push(new Shockwave(x, y, color, maxRadius, duration, target, maxAmplitude));
+  spawnShockwave(x, y, color, maxRadius = 30, duration = 0.3, target = null, maxAmplitude = 5, isPersistent = false) {
+    this.shockwaves.push(new Shockwave(x, y, color, maxRadius, duration, target, maxAmplitude, isPersistent));
   }
 
   spawnFlash(color, duration) {
@@ -127,6 +129,10 @@ export class Game {
 
   spawnTextEffect(x, y, text, color, size, duration) {
     this.textEffects.push(new TextEffect(x, y, text, color, size, duration));
+  }
+
+  spawnChainEffect(x1, y1, x2, y2, color = '#0ff', duration = 0.2) {
+    this.chainEffects.push(new ChainEffect(x1, y1, x2, y2, color, duration));
   }
 
   handleClick(e) {
@@ -157,7 +163,9 @@ export class Game {
       }
       else if (x >= cx - 100 && x <= cx + 100 && y >= cy + 90 && y <= cy + 130) {
         this.state = 'MENU';
-        this.uiManager.mainMenuEl.classList.remove('hidden');
+        if (this.uiManager.mainMenuEl) {
+          this.uiManager.mainMenuEl.classList.remove('hidden');
+        }
       }
       return;
     }
@@ -176,7 +184,8 @@ export class Game {
       if (x >= this.helpBox.x && x <= this.helpBox.x + this.helpBox.w &&
           y >= this.helpBox.y && y <= this.helpBox.y + this.helpBox.h) {
         this.state = 'PAUSED';
-        document.getElementById('help-modal').classList.remove('hidden');
+        const helpModal = document.getElementById('help-modal');
+        if (helpModal) helpModal.classList.remove('hidden');
         return;
       }
 
@@ -225,12 +234,14 @@ export class Game {
       this.projectiles.forEach(p => p.update(dt, this));
       this.shockwaves.forEach(s => s.update(dt));
       this.textEffects.forEach(t => t.update(dt));
+      this.chainEffects.forEach(c => c.update(dt));
       this.flashes.forEach(f => f.life -= dt);
       
       this.enemies = this.enemies.filter(e => !e.markedForDeletion);
       this.projectiles = this.projectiles.filter(p => !p.markedForDeletion);
       this.shockwaves = this.shockwaves.filter(s => !s.markedForDeletion);
       this.textEffects = this.textEffects.filter(t => !t.markedForDeletion);
+      this.chainEffects = this.chainEffects.filter(c => !c.markedForDeletion);
       this.flashes = this.flashes.filter(f => f.life > 0);
     }
     

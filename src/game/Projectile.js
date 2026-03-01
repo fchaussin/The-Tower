@@ -29,6 +29,11 @@ export class Projectile extends Entity {
         if (this.chainCountRemaining > 0) {
           let nextTarget = this.findChainTarget(game);
           if (nextTarget) {
+            if (game.spawnChainEffect) {
+              const chainFeature = game.upgrades.find(u => u.id === 'chain');
+              const color = chainFeature ? chainFeature.color : '#0ff';
+              game.spawnChainEffect(this.target.x, this.target.y, nextTarget.x, nextTarget.y, color, 0.2);
+            }
             this.target = nextTarget;
             this.chainedTo.add(nextTarget);
             this.chainCountRemaining--;
@@ -62,6 +67,11 @@ export class Projectile extends Entity {
             if (this.chainCountRemaining > 0) {
               let nextTarget = this.findChainTarget(game);
               if (nextTarget) {
+                if (game.spawnChainEffect) {
+                  const chainFeature = game.upgrades.find(u => u.id === 'chain');
+                  const color = chainFeature ? chainFeature.color : '#0ff';
+                  game.spawnChainEffect(e.x, e.y, nextTarget.x, nextTarget.y, color, 0.2);
+                }
                 this.target = nextTarget;
                 this.chainedTo.add(nextTarget);
                 this.chainCountRemaining--;
@@ -102,7 +112,9 @@ export class Projectile extends Entity {
         }
       }
       if (game.spawnShockwave) {
-        game.spawnShockwave(target.x, target.y, '#f80', this.tower.splashRadius, 0.3, null, 3);
+        const splashFeature = game.upgrades.find(u => u.id === 'splash');
+        const color = splashFeature ? splashFeature.color : '#f80';
+        game.spawnShockwave(target.x, target.y, color, this.tower.splashRadius, 1.0, null, 3, true);
       }
     } else {
       if (game.spawnShockwave) {

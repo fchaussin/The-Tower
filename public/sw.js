@@ -1,4 +1,4 @@
-const CACHE_NAME = 'the-tower-v1';
+const CACHE_NAME = 'the-tower-v2';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -32,16 +32,8 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      if (response) {
-        return response;
-      }
-      return fetch(event.request).then((networkResponse) => {
-        // Optional: Cache new requests dynamically
-        return networkResponse;
-      }).catch(() => {
-        // Optional: Return fallback offline page if network fails
-      });
+    fetch(event.request).catch(() => {
+      return caches.match(event.request);
     })
   );
 });

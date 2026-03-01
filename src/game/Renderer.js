@@ -14,9 +14,10 @@ export class Renderer {
     if (this.game.state === 'PLAYING' || this.game.state === 'PAUSED' || this.game.state === 'GAME_OVER') {
       this.drawFlashes();
       
-      this.game.tower.draw(this.ctx);
+      this.game.tower.draw(this.ctx, this.game);
       this.game.enemies.forEach(e => e.draw(this.ctx));
       this.game.projectiles.forEach(p => p.draw(this.ctx));
+      this.game.chainEffects.forEach(c => c.draw(this.ctx));
       this.game.shockwaves.forEach(s => s.draw(this.ctx));
       this.game.textEffects.forEach(t => t.draw(this.ctx));
       

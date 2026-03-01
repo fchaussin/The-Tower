@@ -20,12 +20,17 @@ export class DamageFeature extends TowerFeature {
 
   draw(ctx, x, y, w, h, color) {
     ctx.beginPath();
-    ctx.moveTo(x + w * 0.2, y + h * 0.8);
+    // Blade
+    ctx.moveTo(x + w * 0.4, y + h * 0.6);
     ctx.lineTo(x + w * 0.8, y + h * 0.2);
-    ctx.moveTo(x + w * 0.3, y + h * 0.9);
-    ctx.lineTo(x + w * 0.1, y + h * 0.7);
+    // Crossguard
+    ctx.moveTo(x + w * 0.3, y + h * 0.5);
+    ctx.lineTo(x + w * 0.5, y + h * 0.7);
+    // Handle
+    ctx.moveTo(x + w * 0.4, y + h * 0.6);
+    ctx.lineTo(x + w * 0.25, y + h * 0.75);
     ctx.strokeStyle = color;
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 2;
     ctx.stroke();
   }
 }

@@ -129,6 +129,25 @@ export class Enemy extends Entity {
       ctx.stroke();
     }
 
+    if (this.poisonDuration > 0) {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius + 4 + Math.sin(Date.now() / 150) * 2, 0, Math.PI * 2);
+      ctx.strokeStyle = '#0f0';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      
+      ctx.fillStyle = '#0f0';
+      for (let i = 0; i < 3; i++) {
+        let bx = this.x + Math.cos(Date.now() / 200 + i * 2) * (this.radius + 6);
+        let by = this.y + Math.sin(Date.now() / 200 + i * 2) * (this.radius + 6);
+        ctx.beginPath();
+        ctx.arc(bx, by, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
     ctx.globalAlpha = 0.8;
     let bw = 20;
     let bh = 4;

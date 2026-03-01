@@ -20,7 +20,10 @@ export class Tower extends Entity {
     if (this.highlightRangeTimer > 0) {
       this.highlightRangeTimer -= dt * 1000;
     }
-    if (game.time - this.lastFireTime > this.cooldown) {
+    
+    this.cooldownProgress = Math.min(1, Math.max(0, (game.time - this.lastFireTime) / this.cooldown));
+
+    if (this.cooldownProgress >= 1) {
       let target = null;
       let minDst = Infinity;
       for (let e of game.enemies) {
@@ -35,11 +38,12 @@ export class Tower extends Entity {
       if (target) {
         game.projectiles.push(new Projectile(this.x, this.y, target, this.damage, this.projectileSpeed, this));
         this.lastFireTime = game.time;
+        this.cooldownProgress = 0;
         game.audioManager.playSound('shoot');
       }
     }
   }
-  draw(ctx) {
+  draw(ctx, game) {
     // Base range background
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.range, 0, Math.PI * 2);
@@ -61,17 +65,43 @@ export class Tower extends Entity {
     ctx.arc(this.x, this.y, this.range, 0, Math.PI * 2);
     if (this.highlightRangeTimer > 0) {
       let alpha = 0.1 + 0.7 * (this.highlightRangeTimer / 500);
-      ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+      const rangeFeature = game.upgrades ? game.upgrades.find(u => u.id === 'range') : null;
+      ctx.strokeStyle = rangeFeature ? rangeFeature.color : '#fff';
+      ctx.globalAlpha = alpha;
       ctx.lineWidth = 1 + 2 * (this.highlightRangeTimer / 500);
+      ctx.stroke();
+      ctx.globalAlpha = 1.0;
     } else {
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
       ctx.lineWidth = 1;
+      ctx.stroke();
     }
-    ctx.stroke();
     
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
     ctx.fillStyle = '#fff';
     ctx.fill();
+
+    // Cooldown preloader ring
+    if (this.cooldownProgress !== undefined && this.cooldownProgress < 1) {
+      const cooldownFeature = game.upgrades ? game.upgrades.find(u => u.id === 'cooldown') : null;
+      const cooldownColor = cooldownFeature ? cooldownFeature.color : '#fff';
+      
+      // Background track
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius + 6, 0, Math.PI * 2);
+      ctx.strokeStyle = cooldownColor;
+      ctx.globalAlpha = 0.2;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      ctx.globalAlpha = 1.0;
+
+      // Progress arc
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius + 6, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * this.cooldownProgress));
+      ctx.strokeStyle = cooldownColor;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
   }
 }

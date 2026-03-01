@@ -10,6 +10,7 @@ import { PoisonFeature } from './features/PoisonFeature.js';
 export class UIManager {
   constructor(game) {
     this.game = game;
+    console.log('UIManager constructor running, looking for buttons...');
     this.formatter = new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 });
     
     this.mainMenuEl = document.getElementById('main-menu');
@@ -235,8 +236,10 @@ export class UIManager {
   }
 
   showGameOver() {
-    document.getElementById('finalScore').innerText = `Score: ${this.formatNumber(this.game.score)}`;
-    document.getElementById('finalLevel').innerText = `Level: ${this.game.level}`;
-    this.gameOverMenuEl.classList.remove('hidden');
+    const finalScoreEl = document.getElementById('finalScore');
+    if (finalScoreEl) finalScoreEl.innerText = `Score: ${this.formatNumber(this.game.score)}`;
+    const finalLevelEl = document.getElementById('finalLevel');
+    if (finalLevelEl) finalLevelEl.innerText = `Level: ${this.game.level}`;
+    if (this.gameOverMenuEl) this.gameOverMenuEl.classList.remove('hidden');
   }
 }

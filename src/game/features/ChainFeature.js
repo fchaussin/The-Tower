@@ -10,7 +10,7 @@ export class ChainFeature extends TowerFeature {
       baseIntensity: 1,
       intensityMultiplier: 1,
       intensityAddition: 0.5,
-      color: '#f0f'
+      color: '#0ff'
     });
   }
 
