@@ -8,7 +8,7 @@
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" type="image/svg+xml" href="/icon.svg">
 <link rel="apple-touch-icon" href="/icon.svg">
-<title>The Tower</title>
+<title>Idle Tower Defense</title>
 <style>
   /* Inline CSS for immediate splash screen rendering */
   #splash-screen {
@@ -65,7 +65,7 @@
 </div>
 <div id="ui-layer">
   <div id="main-menu" class="menu-container">
-    <h1>THE TOWER</h1>
+    <h1>Idle Tower Defense</h1>
     
     <div id="auth-section" class="hidden" style="margin-bottom: 20px; text-align: center;">
       <button id="loginBtn" class="btn" style="background: #4285F4; border-color: #4285F4; margin-bottom: 10px; font-size: 14px;">LOGIN WITH GOOGLE</button>
@@ -76,11 +76,13 @@
       <label for="playerName">Player Name:</label>
       <input type="text" id="playerName" placeholder="Enter your name" maxlength="15" />
     </div>
-    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+    <div style="display: flex; gap: 10px;;">
       <button id="startBtn" class="btn" style="flex: 1;">START GAME</button>
       <button id="helpBtn" class="btn" style="width: 50px; padding: 10px;">?</button>
     </div>
-    <button id="fullscreenBtn" class="btn" style="margin-bottom: 20px; font-size: 14px; background: #333;">ENTER FULL SCREEN</button>
+    <button id="fullscreenBtn" class="btn secondary" style="margin-bottom: 20px; font-size: 14px;">
+      ENTER FULL SCREEN
+    </button>
     
     <div class="leaderboard">
       <h2>Top Scores</h2>
@@ -98,7 +100,7 @@
     <p id="finalLevel">Level: 1</p>
     <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
       <button id="restartBtn" class="btn">PLAY AGAIN</button>
-      <button id="mainMenuBtn" class="btn" style="background: #333;">MAIN MENU</button>
+      <button id="mainMenuBtn" class="btn secondary">MAIN MENU</button>
     </div>
   </div>
 

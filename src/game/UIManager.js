@@ -33,10 +33,10 @@ export class UIManager {
           if (this.loginBtn) this.loginBtn.classList.add('hidden');
           if (this.userInfo) {
             this.userInfo.classList.remove('hidden');
-            this.userInfo.innerText = `Logged in as: ${user.email}`;
+            this.userInfo.innerText = `Logged in as: ${user.displayName}`;
           }
           
-          const username = user.email.split('@')[0];
+          const username = user.displayName;
           if (this.playerNameInput) this.playerNameInput.value = username;
           this.game.playerName = username;
           localStorage.setItem('tower_playerName', this.game.playerName);
@@ -116,9 +116,9 @@ export class UIManager {
 
       document.addEventListener('fullscreenchange', () => {
         if (!document.fullscreenElement) {
-          fullscreenBtn.innerText = 'ENTER FULL SCREEN';
+          fullscreenBtn.innerText = 'ENTER FULLSCREEN';
         } else {
-          fullscreenBtn.innerText = 'EXIT FULL SCREEN';
+          fullscreenBtn.innerText = 'EXIT FULLSCREEN';
         }
       });
     } else console.warn('fullscreenBtn not found');

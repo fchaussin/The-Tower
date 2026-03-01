@@ -1,6 +1,6 @@
 {
-  "name": "The Tower",
-  "short_name": "The Tower",
+  "name": "Idle Tower Defense",
+  "short_name": "ITD",
   "description": "A minimalist tower defense game",
   "start_url": "/",
   "display": "standalone",

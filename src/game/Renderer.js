@@ -144,11 +144,16 @@ export class Renderer {
     let cy = this.game.height / 2;
     
     this.ctx.font = '24px monospace';
-    this.ctx.strokeStyle = '#fff';
-    
-    // Resume
+
+    // Resume (Accent #0cf)
+    this.ctx.strokeStyle = '#0cf'; // Accent
+    this.ctx.fillStyle = '#0cf';   // Accent
     this.ctx.strokeRect(cx - 100, cy - 90, 200, 40);
     this.ctx.fillText('Resume', cx, cy - 62);
+    
+    // Autres boutons (Blanc)
+    this.ctx.strokeStyle = '#fff';
+    this.ctx.fillStyle = '#fff';
     
     // Reset
     this.ctx.strokeRect(cx - 100, cy - 30, 200, 40);
@@ -156,12 +161,12 @@ export class Renderer {
     
     // Fullscreen
     this.ctx.strokeRect(cx - 100, cy + 30, 200, 40);
-    const fsText = document.fullscreenElement ? 'Exit Fullscreen' : 'Fullscreen';
+    const fsText = document.fullscreenElement ? 'No Fullscreen' : 'Fullscreen';
     this.ctx.fillText(fsText, cx, cy + 58);
     
     // Quit
     this.ctx.strokeRect(cx - 100, cy + 90, 200, 40);
-    this.ctx.fillText('Quit', cx, cy + 118);
+    this.ctx.fillText('Exit', cx, cy + 118);
     
     this.ctx.textAlign = 'left';
   }
