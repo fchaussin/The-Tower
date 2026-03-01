@@ -134,6 +134,11 @@ canvas {
   border-bottom: 1px solid #222;
 }
 
+#scoreList li span svg {
+    height: 1.1em;
+    stroke: #0cf;
+}
+
 .hidden {
   display: none !important;
 }

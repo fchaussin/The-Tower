@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -33,6 +33,8 @@ if (firebaseConfig.apiKey) {
   console.warn("Firebase and OAuth services did not load.", error);
 }
 
+const SCORES_COLLECTION = 'itd_scores';
+
 export { 
   auth, 
   db, 
@@ -45,5 +47,7 @@ export {
   query, 
   orderBy, 
   limit, 
-  isFirebaseEnabled 
+  serverTimestamp,
+  isFirebaseEnabled,
+  SCORES_COLLECTION
 };
