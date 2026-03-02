@@ -1,8 +1,8 @@
 import { Enemy } from './Enemy.js';
 
 export class E035_HollowHexagon extends Enemy {
-  constructor(x, y, targetX, targetY) {
-    super(x, y, targetX, targetY, 18, 97, 70, '#f08', 'hexagon', 'stroke');
+  constructor({ x, y, targetX, targetY }) {
+    super({ x, y, targetX, targetY, radius: 18, maxHealth: 97, speed: 70, color: '#f08', shape: 'hexagon', style: 'stroke' });
   }
   
   getCurrencyValue() { return 10; }

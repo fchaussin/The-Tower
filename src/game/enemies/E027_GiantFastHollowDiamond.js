@@ -1,8 +1,8 @@
 import { Enemy } from './Enemy.js';
 
 export class E027_GiantFastHollowDiamond extends Enemy {
-  constructor(x, y, targetX, targetY) {
-    super(x, y, targetX, targetY, 32, 77, 90, '#ff0', 'diamond', 'stroke');
+  constructor({ x, y, targetX, targetY }) {
+    super({ x, y, targetX, targetY, radius: 32, maxHealth: 77, speed: 90, color: '#ff0', shape: 'diamond', style: 'stroke' });
   }
   
   getCurrencyValue() { return 8; }

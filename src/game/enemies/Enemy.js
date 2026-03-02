@@ -1,7 +1,7 @@
 import { Entity } from '../Entity.js';
 
 export class Enemy extends Entity {
-  constructor(x, y, targetX, targetY, radius, maxHealth, speed, color, shape = 'circle', style = 'fill') {
+  constructor({ x, y, targetX, targetY, radius, maxHealth, speed, color, shape = 'circle', style = 'fill' }) {
     super(x, y);
     this.targetX = targetX;
     this.targetY = targetY;

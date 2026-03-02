@@ -33,8 +33,8 @@ if (firebaseConfig.apiKey) {
   console.warn("Firebase and OAuth services did not load.", error);
 }
 
-const SCORES_COLLECTION = 'itd_scores';
-const LEADERBOARD_COLLECTION = 'itd_leaderboard';
+const SCORES_COLLECTION = 'itd_scores'; // game (full details) : write only
+const LEADERBOARD_COLLECTION = 'itd_leaderboard'; // topscores (minimum details) : read/write
 
 export { 
   auth, 

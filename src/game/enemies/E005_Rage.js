@@ -1,8 +1,8 @@
 import { Enemy } from './Enemy.js';
 
 export class E005_Rage extends Enemy {
-  constructor(x, y, targetX, targetY) {
-    super(x, y, targetX, targetY, 12, 100, 35, '#f80', 'star', 'fill');
+  constructor({ x, y, targetX, targetY }) {
+    super({ x, y, targetX, targetY, radius: 12, maxHealth: 100, speed: 35, color: '#f80', shape: 'star', style: 'fill' });
     this.enraged = false;
   }
   update(dt, game) {

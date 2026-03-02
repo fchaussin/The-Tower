@@ -211,7 +211,7 @@ export class Game {
     let tx = this.width / 2;
     let ty = this.height / 2;
     
-    this.enemies.push(new EnemyClass(ex, ey, tx, ty));
+    this.enemies.push(new EnemyClass({ x: ex, y: ey, targetX: tx, targetY: ty }));
   }
 
   loop(timestamp) {
