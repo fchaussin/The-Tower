@@ -30,6 +30,11 @@ export class Game {
     this.resize();
     window.addEventListener('resize', () => this.resize());
     this.canvas.addEventListener('click', (e) => this.handleClick(e));
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState !== 'visible' && this.state === 'PLAYING') {
+        this.state = 'PAUSED';
+      }
+    });
     
     this.uiManager.setup();
     this.uiManager.updateLeaderboard();

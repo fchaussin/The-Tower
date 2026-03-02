@@ -50,7 +50,6 @@ export class UIManager {
         if (user) {
           if (this.loginBtn) this.loginBtn.classList.add('hidden');
           if (this.userInfo) {
-            this.userInfo.classList.remove('hidden');
             this.userInfo.innerText = `Logged in as: ${user.displayName}`;
           }
 
@@ -62,7 +61,6 @@ export class UIManager {
           }
         } else {
           if (this.loginBtn) this.loginBtn.classList.remove('hidden');
-          if (this.userInfo) this.userInfo.classList.add('hidden');
         }
       });
 
