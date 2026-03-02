@@ -1,7 +1,7 @@
 import { Entity } from '../Entity.js';
 
 export class Enemy extends Entity {
-  constructor({ x, y, targetX, targetY, radius, maxHealth, speed, color, shape = 'circle', style = 'fill' }) {
+  constructor({ x, y, targetX, targetY, radius, maxHealth, speed, color, shape = 'circle', style = 'fill', isBoss = false }) {
     super(x, y);
     this.targetX = targetX;
     this.targetY = targetY;
@@ -12,6 +12,7 @@ export class Enemy extends Entity {
     this.color = color;
     this.shape = shape;
     this.style = style;
+    this.isBoss = isBoss;
     this.poisonDamage = 0;
     this.poisonDuration = 0;
     this.poisonTimer = 0;
@@ -49,8 +50,23 @@ export class Enemy extends Entity {
       let angle = Math.atan2(dy, dx);
       this.x -= Math.cos(angle) * overlap;
       this.y -= Math.sin(angle) * overlap;
-      game.audioManager.playSound('gameover');
-      game.gameOver();
+      
+      this.markedForDeletion = true;
+      game.lives--;
+      
+      if (game.spawnShockwave) {
+        game.spawnShockwave(this.x, this.y, '#f00', 50, 0.3, null, 10);
+      }
+      if (game.spawnFlash) {
+        game.spawnFlash('#f00', 0.2);
+      }
+
+      if (game.lives <= 0) {
+        game.audioManager.playSound('gameover');
+        game.gameOver();
+      } else {
+        game.audioManager.playSound('hit');
+      }
     }
     if (this.health <= 0) {
       this.die(game);
@@ -58,6 +74,11 @@ export class Enemy extends Entity {
   }
   die(game) {
     this.markedForDeletion = true;
+    if (this.isBoss) {
+      game.audioManager.playSound('bossDeath');
+    } else {
+      game.audioManager.playExplosion();
+    }
     game.currency += this.getCurrencyValue();
     game.score += this.getScoreValue();
     if (game.spawnShockwave) {

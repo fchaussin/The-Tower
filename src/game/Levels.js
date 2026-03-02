@@ -43,9 +43,9 @@ class WaveBuilder {
   }
   
   // Add a sequence of the same enemy
-  addSeries(EnemyClass, count, intervalMs) {
+  addSeries(EnemyClass, count, intervalMs, isBoss = false) {
     for (let i = 0; i < count; i++) {
-      this.events.push({ time: this.currentTime, type: EnemyClass });
+      this.events.push({ time: this.currentTime, type: EnemyClass, isBoss });
       this.currentTime += intervalMs;
     }
     return this;
@@ -58,7 +58,7 @@ class WaveBuilder {
     for (let seq of sequences) {
       let t = start;
       for (let i = 0; i < seq.count; i++) {
-        this.events.push({ time: t, type: seq.type });
+        this.events.push({ time: t, type: seq.type, isBoss: seq.isBoss || false });
         t += seq.intervalMs;
       }
       if (t > maxTime) maxTime = t;
@@ -150,7 +150,7 @@ export function getLevelConfig(level) {
     
     // Boss arrives with a massive escort
     builder.addConcurrent([
-      { type: BossEnemy, count: bossCount, intervalMs: vary(cfg.baseWaitTime) },
+      { type: BossEnemy, count: bossCount, intervalMs: vary(cfg.baseWaitTime), isBoss: true },
       { type: SwarmEnemy, count: swarmCount * 2, intervalMs: swarmInterval * 0.5 },
       { type: CoreEnemy, count: coreCount, intervalMs: coreInterval }
     ]).wait(vary(cfg.bossWaitTime));

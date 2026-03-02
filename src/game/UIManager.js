@@ -80,6 +80,7 @@ export class UIManager {
       startBtn.addEventListener('click', () => {
         if (this.mainMenuEl) this.mainMenuEl.classList.add('hidden');
         this.game.audioManager.init();
+        this.game.audioManager.stopMenuMusic();
         this.game.reset();
         this.game.state = 'PLAYING';
         this.game.lastTime = performance.now();
@@ -90,6 +91,7 @@ export class UIManager {
     if (restartBtn) {
       restartBtn.addEventListener('click', () => {
         if (this.gameOverMenuEl) this.gameOverMenuEl.classList.add('hidden');
+        this.game.audioManager.stopMenuMusic();
         this.game.reset();
         this.game.state = 'PLAYING';
         this.game.lastTime = performance.now();
@@ -102,6 +104,8 @@ export class UIManager {
         if (this.gameOverMenuEl) this.gameOverMenuEl.classList.add('hidden');
         if (this.mainMenuEl) this.mainMenuEl.classList.remove('hidden');
         this.game.state = 'MENU';
+        this.game.audioManager.playMenuMusic();
+        this.updateMenuSoundBtn();
         this.updateLeaderboard();
       });
     } else console.warn('mainMenuBtn not found');
@@ -140,7 +144,40 @@ export class UIManager {
       });
     } else console.warn('fullscreenBtn not found');
 
+    const menuSoundBtn = document.getElementById('menuSoundBtn');
+    if (menuSoundBtn) {
+      menuSoundBtn.addEventListener('click', () => {
+        this.game.audioManager.init();
+        const enabled = this.game.audioManager.toggleSound();
+        if (enabled) {
+          menuSoundBtn.innerText = '🔊';
+          menuSoundBtn.style.color = '#0f0';
+          menuSoundBtn.style.borderColor = '#0f0';
+          this.game.audioManager.playMenuMusic();
+        } else {
+          menuSoundBtn.innerText = '🔇';
+          menuSoundBtn.style.color = '#f00';
+          menuSoundBtn.style.borderColor = '#f00';
+        }
+      });
+    }
+
     this.renderTowerFeatureIcons();
+  }
+
+  updateMenuSoundBtn() {
+    const menuSoundBtn = document.getElementById('menuSoundBtn');
+    if (menuSoundBtn) {
+      if (this.game.audioManager.soundEnabled) {
+        menuSoundBtn.innerText = '🔊';
+        menuSoundBtn.style.color = '#0f0';
+        menuSoundBtn.style.borderColor = '#0f0';
+      } else {
+        menuSoundBtn.innerText = '🔇';
+        menuSoundBtn.style.color = '#f00';
+        menuSoundBtn.style.borderColor = '#f00';
+      }
+    }
   }
 
   renderIcon(canvas, feature) {

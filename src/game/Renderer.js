@@ -65,6 +65,15 @@ export class Renderer {
     this.ctx.moveTo(30, 95); this.ctx.lineTo(35, 105); this.ctx.lineTo(25, 105);
     this.ctx.closePath(); this.ctx.fill();
     this.ctx.fillStyle = '#fff'; this.ctx.fillText(this.game.level, 50, 107);
+
+    // Lives
+    this.ctx.fillStyle = '#f00';
+    this.ctx.font = '20px monospace';
+    this.ctx.textAlign = 'center';
+    this.ctx.fillText('♥', 30, 142);
+    this.ctx.fillStyle = '#fff'; 
+    this.ctx.textAlign = 'left'; 
+    this.ctx.fillText(Math.max(0, this.game.lives), 50, 142);
   }
 
   drawUpgrades() {

@@ -87,6 +87,7 @@ export class Game {
     this.currency = 0;
     this.score = 0;
     this.level = 1;
+    this.lives = 3;
     this.time = 0;
     this.lastSpawnTime = 0;
     this.spawnInterval = 2000;
@@ -113,12 +114,16 @@ export class Game {
     this.currentEventIndex = 0;
     
     this.spawnTextEffect(this.width / 2, this.height / 2 - 100, `LEVEL ${this.level}`, '#0df', 64, 2.5);
+    if (this.level > 1) {
+      this.audioManager.playLevelUp();
+    }
     if (config.bonusCurrency > 0) {
       this.spawnTextEffect(this.width / 2, this.height / 2 - 40, `+${this.uiManager.formatNumber(config.bonusCurrency)} Bonus!`, '#fd0', 32, 2.5);
     }
   }
 
   gameOver() {
+    if (this.state === 'GAME_OVER') return;
     this.state = 'GAME_OVER';
     this.uiManager.saveScore();
     this.uiManager.showGameOver();
@@ -168,6 +173,8 @@ export class Game {
       }
       else if (x >= cx - 100 && x <= cx + 100 && y >= cy + 90 && y <= cy + 130) {
         this.state = 'MENU';
+        this.audioManager.playMenuMusic();
+        this.uiManager.updateMenuSoundBtn();
         if (this.uiManager.mainMenuEl) {
           this.uiManager.mainMenuEl.classList.remove('hidden');
         }
@@ -203,7 +210,7 @@ export class Game {
     }
   }
 
-  spawnEnemy(EnemyClass) {
+  spawnEnemy(EnemyClass, isBoss = false) {
     this.spawnAngle = (this.spawnAngle || 0) + Math.PI * 0.37;
     let dist = Math.max(this.width, this.height);
     let ex = this.width / 2 + Math.cos(this.spawnAngle) * dist;
@@ -211,7 +218,7 @@ export class Game {
     let tx = this.width / 2;
     let ty = this.height / 2;
     
-    this.enemies.push(new EnemyClass({ x: ex, y: ey, targetX: tx, targetY: ty }));
+    this.enemies.push(new EnemyClass({ x: ex, y: ey, targetX: tx, targetY: ty, isBoss }));
   }
 
   loop(timestamp) {
@@ -225,7 +232,8 @@ export class Game {
       
       while (this.currentEventIndex < this.levelEvents.length && 
              levelTime >= this.levelEvents[this.currentEventIndex].time) {
-        this.spawnEnemy(this.levelEvents[this.currentEventIndex].type);
+        const event = this.levelEvents[this.currentEventIndex];
+        this.spawnEnemy(event.type, event.isBoss);
         this.currentEventIndex++;
       }
       
