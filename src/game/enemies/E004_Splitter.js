@@ -3,7 +3,7 @@ import { E002_Basic } from './E002_Basic.js';
 
 export class E004_Splitter extends Enemy {
   constructor({ x, y, targetX, targetY }) {
-    super({ x, y, targetX, targetY, radius: 14, maxHealth: 6, speed: 40, color: '#a0f', shape: 'diamond', style: 'stroke' });
+    super({ x, y, targetX, targetY, radius: 18, maxHealth: 6, speed: 40, color: '#a0f', shape: 'diamond', style: 'stroke' });
   }
   die(game) {
     super.die(game);
