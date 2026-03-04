@@ -16,7 +16,22 @@ export class Enemy extends Entity {
     this.poisonDamage = 0;
     this.poisonDuration = 0;
     this.poisonTimer = 0;
+    this.slowDuration = 0;
+    this.slowIntensity = 0;
+    this.originalSpeed = speed;
     this.updateVelocity();
+  }
+  applyDifficulty(settings) {
+    if (!settings) return;
+    if (settings.enemyHealthMult) {
+      this.maxHealth *= settings.enemyHealthMult;
+      this.health = this.maxHealth;
+    }
+    if (settings.enemySpeedMult) {
+      this.speed *= settings.enemySpeedMult;
+      this.originalSpeed = this.speed;
+      this.updateVelocity();
+    }
   }
   updateVelocity() {
     let dx = this.targetX - this.x;
@@ -26,6 +41,16 @@ export class Enemy extends Entity {
     this.vy = (dy / dist) * this.speed;
   }
   update(dt, game) {
+    if (this.slowDuration > 0) {
+      this.slowDuration -= dt;
+      this.speed = this.originalSpeed * (1 - this.slowIntensity);
+      if (this.slowDuration <= 0) {
+        this.speed = this.originalSpeed;
+        this.slowIntensity = 0;
+      }
+      this.updateVelocity();
+    }
+
     if (this.poisonDuration > 0) {
       this.poisonDuration -= dt;
       this.poisonTimer += dt;
@@ -52,20 +77,13 @@ export class Enemy extends Entity {
       this.y -= Math.sin(angle) * overlap;
       
       this.markedForDeletion = true;
-      game.lives--;
+      game.loseLife();
       
       if (game.spawnShockwave) {
         game.spawnShockwave(this.x, this.y, '#f00', 50, 0.3, null, 10);
       }
       if (game.spawnFlash) {
         game.spawnFlash('#f00', 0.2);
-      }
-
-      if (game.lives <= 0) {
-        game.audioManager.playSound('gameover');
-        game.gameOver();
-      } else {
-        game.audioManager.playSound('hit');
       }
     }
     if (this.health <= 0) {
@@ -165,6 +183,25 @@ export class Enemy extends Entity {
         let by = this.y + Math.sin(Date.now() / 200 + i * 2) * (this.radius + 6);
         ctx.beginPath();
         ctx.arc(bx, by, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    if (this.slowDuration > 0) {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius + 2, 0, Math.PI * 2);
+      ctx.strokeStyle = '#4af';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      
+      // Ice crystals effect
+      ctx.fillStyle = '#4af';
+      for (let i = 0; i < 4; i++) {
+        let angle = (Date.now() / 500) + (i * Math.PI / 2);
+        let bx = this.x + Math.cos(angle) * (this.radius + 4);
+        let by = this.y + Math.sin(angle) * (this.radius + 4);
+        ctx.beginPath();
+        ctx.rect(bx - 2, by - 2, 4, 4);
         ctx.fill();
       }
     }

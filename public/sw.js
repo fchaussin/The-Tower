@@ -37,3 +37,27 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
+self.addEventListener('push', (event) => {
+  const data = event.data ? event.data.json() : { title: 'New Top Score!', body: 'Someone just made it to the Top 10!' };
+  const title = data.title;
+  const options = {
+    body: data.body,
+    icon: '/icon.svg',
+    badge: '/icon.svg',
+    data: {
+      url: self.location.origin
+    }
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(title, options)
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    clients.openWindow(event.notification.data.url)
+  );
+});

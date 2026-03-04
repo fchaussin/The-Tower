@@ -16,12 +16,13 @@ export class TextEffect {
     if (this.life <= 0) this.markedForDeletion = true;
   }
   draw(ctx) {
+    ctx.save();
     ctx.globalAlpha = Math.max(0, this.life / this.maxLife);
     ctx.fillStyle = this.color;
     ctx.font = `bold ${this.size}px monospace`;
     ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
     ctx.fillText(this.text, this.x, this.y);
-    ctx.textAlign = 'left';
-    ctx.globalAlpha = 1.0;
+    ctx.restore();
   }
 }

@@ -1,3 +1,5 @@
+import { GAME_STATES } from './GameStates.js';
+
 export class Renderer {
   constructor(game, ctx) {
     this.game = game;
@@ -7,11 +9,11 @@ export class Renderer {
   draw() {
     this.ctx.clearRect(0, 0, this.game.width, this.game.height);
 
-    if (this.game.state === 'MENU') {
+    if (this.game.state === GAME_STATES.MENU) {
       return;
     }
 
-    if (this.game.state === 'PLAYING' || this.game.state === 'PAUSED' || this.game.state === 'GAME_OVER') {
+    if (this.game.state === GAME_STATES.PLAYING || this.game.state === GAME_STATES.PAUSED || this.game.state === GAME_STATES.GAME_OVER || this.game.state === GAME_STATES.LIFE_LOST) {
       this.drawFlashes();
       
       this.game.tower.draw(this.ctx, this.game);
@@ -25,8 +27,9 @@ export class Renderer {
       this.drawUpgrades();
       this.drawControls();
 
-      if (this.game.state === 'PAUSED') {
-        this.drawPauseMenu();
+      if (this.game.state === GAME_STATES.LIFE_LOST) {
+        this.ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+        this.ctx.fillRect(0, 0, this.game.width, this.game.height);
       }
     }
   }
@@ -59,21 +62,36 @@ export class Renderer {
     this.ctx.closePath(); this.ctx.fill();
     this.ctx.fillStyle = '#fff'; this.ctx.fillText(ui.formatNumber(this.game.score), 50, 72);
     
-    // Level
+    // Level & Wave
     this.ctx.fillStyle = '#f0f';
     this.ctx.beginPath();
     this.ctx.moveTo(30, 95); this.ctx.lineTo(35, 105); this.ctx.lineTo(25, 105);
     this.ctx.closePath(); this.ctx.fill();
-    this.ctx.fillStyle = '#fff'; this.ctx.fillText(this.game.level, 50, 107);
+    this.ctx.fillStyle = '#fff'; 
+    this.ctx.textAlign = 'left';
+    this.ctx.fillText(`Lvl ${this.game.level}`, 50, 107);
+    
+    if (this.game.totalWaves > 0) {
+      this.ctx.font = '14px monospace';
+      this.ctx.fillStyle = '#aaa';
+      this.ctx.fillText(`Wave ${this.game.currentWave}/${this.game.totalWaves}`, 50, 122);
+      
+      // Difficulty indicator
+      const diff = this.game.difficulty;
+      const diffColor = diff === 'EASY' ? '#0f0' : (diff === 'HARD' ? '#f00' : '#ff0');
+      this.ctx.fillStyle = diffColor;
+      this.ctx.font = '12px monospace';
+      this.ctx.fillText(diff, 50, 137);
+    }
 
     // Lives
     this.ctx.fillStyle = '#f00';
     this.ctx.font = '20px monospace';
     this.ctx.textAlign = 'center';
-    this.ctx.fillText('♥', 30, 142);
+    this.ctx.fillText('♥', 30, 172);
     this.ctx.fillStyle = '#fff'; 
     this.ctx.textAlign = 'left'; 
-    this.ctx.fillText(Math.max(0, this.game.lives), 50, 142);
+    this.ctx.fillText(Math.max(0, this.game.lives), 50, 172);
   }
 
   drawUpgrades() {
@@ -89,6 +107,29 @@ export class Renderer {
       this.ctx.font = `${fontSize}px monospace`;
       this.ctx.textAlign = 'center';
       this.ctx.fillText(ui.formatNumber(upg.cost), upg.box.x + upg.box.w / 2, upg.box.y + upg.box.h + fontSize + 4);
+
+      // Draw level number in bottom right
+      if (upg.level > 0) {
+        const levelText = upg.level.toString();
+        const levelFontSize = Math.floor(upg.box.w * 0.25);
+        this.ctx.font = `bold ${levelFontSize}px monospace`;
+        const textWidth = this.ctx.measureText(levelText).width;
+        
+        // Small background for readability
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+        this.ctx.fillRect(
+          upg.box.x + upg.box.w - textWidth - 6, 
+          upg.box.y + upg.box.h - levelFontSize - 4, 
+          textWidth + 6, 
+          levelFontSize + 4
+        );
+
+        this.ctx.fillStyle = '#fff';
+        this.ctx.textAlign = 'right';
+        this.ctx.textBaseline = 'bottom';
+        this.ctx.fillText(levelText, upg.box.x + upg.box.w - 3, upg.box.y + upg.box.h - 2);
+        this.ctx.textBaseline = 'alphabetic'; // Reset baseline
+      }
     });
     this.ctx.textAlign = 'left';
   }
@@ -138,46 +179,6 @@ export class Renderer {
     this.ctx.textBaseline = 'middle';
     this.ctx.fillText('?', this.game.helpBox.x + this.game.helpBox.w / 2, this.game.helpBox.y + this.game.helpBox.h / 2);
     this.ctx.textBaseline = 'alphabetic';
-    this.ctx.textAlign = 'left';
-  }
-
-  drawPauseMenu() {
-    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    this.ctx.fillRect(0, 0, this.game.width, this.game.height);
-    
-    this.ctx.fillStyle = '#fff';
-    this.ctx.font = '48px monospace';
-    this.ctx.textAlign = 'center';
-    this.ctx.fillText('PAUSED', this.game.width / 2, this.game.height / 2 - 140);
-    
-    let cx = this.game.width / 2;
-    let cy = this.game.height / 2;
-    
-    this.ctx.font = '24px monospace';
-
-    // Resume (Accent #0cf)
-    this.ctx.strokeStyle = '#0cf'; // Accent
-    this.ctx.fillStyle = '#0cf';   // Accent
-    this.ctx.strokeRect(cx - 100, cy - 90, 200, 40);
-    this.ctx.fillText('Resume', cx, cy - 62);
-    
-    // Autres boutons (Blanc)
-    this.ctx.strokeStyle = '#fff';
-    this.ctx.fillStyle = '#fff';
-    
-    // Reset
-    this.ctx.strokeRect(cx - 100, cy - 30, 200, 40);
-    this.ctx.fillText('Reset', cx, cy - 2);
-    
-    // Fullscreen
-    this.ctx.strokeRect(cx - 100, cy + 30, 200, 40);
-    const fsText = document.fullscreenElement ? 'No Fullscreen' : 'Fullscreen';
-    this.ctx.fillText(fsText, cx, cy + 58);
-    
-    // Quit
-    this.ctx.strokeRect(cx - 100, cy + 90, 200, 40);
-    this.ctx.fillText('Exit', cx, cy + 118);
-    
     this.ctx.textAlign = 'left';
   }
 }

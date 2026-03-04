@@ -10,6 +10,7 @@ export class Projectile extends Entity {
     this.radius = 4;
     this.chainedTo = new Set([target]); // Keep track of hit enemies to avoid bouncing back
     this.chainCountRemaining = tower ? (tower.chainCount || 0) : 0;
+    this.hitIndex = 0;
     
     let dx = target.x - x;
     let dy = target.y - y;
@@ -37,6 +38,7 @@ export class Projectile extends Entity {
             this.target = nextTarget;
             this.chainedTo.add(nextTarget);
             this.chainCountRemaining--;
+            this.hitIndex++;
             this.x = this.target.x; // Snap to target before bouncing
             this.y = this.target.y;
             return; // Continue flying to next target
@@ -75,6 +77,7 @@ export class Projectile extends Entity {
                 this.target = nextTarget;
                 this.chainedTo.add(nextTarget);
                 this.chainCountRemaining--;
+                this.hitIndex++;
                 this.x = e.x;
                 this.y = e.y;
                 return;
@@ -98,16 +101,23 @@ export class Projectile extends Entity {
   }
   
   applyDamageAndEffects(target, game) {
-    target.health -= this.damage;
+    // Chain damage falloff: 100%, 60%, 36%, 21%...
+    let currentDamage = this.damage * Math.pow(0.6, this.hitIndex);
+    target.health -= currentDamage;
     game.audioManager.playSound('hit');
     
     // Splash Damage
     if (this.tower && this.tower.splashRadius > 0) {
+      // Splash damage also follows chain falloff if it's a chain hit
+      let baseSplashDamage = this.tower.splashDamage * Math.pow(0.6, this.hitIndex);
+      
       for (let e of game.enemies) {
-        if (e !== target) {
+        if (e !== target && !e.markedForDeletion) {
           let dist = Math.hypot(e.x - target.x, e.y - target.y);
           if (dist <= this.tower.splashRadius) {
-            e.health -= this.tower.splashDamage;
+            // Splash falloff: linear from center to edge
+            let falloff = 1 - (dist / this.tower.splashRadius);
+            e.health -= baseSplashDamage * falloff;
           }
         }
       }
@@ -129,6 +139,26 @@ export class Projectile extends Entity {
     if (this.tower && this.tower.poisonDamage > 0) {
       target.poisonDamage = this.tower.poisonDamage;
       target.poisonDuration = this.tower.poisonDuration;
+    }
+
+    // Slow
+    if (this.tower && this.tower.slowIntensity > 0) {
+      // Apply slow to main target
+      target.slowIntensity = this.tower.slowIntensity;
+      target.slowDuration = this.tower.slowDuration;
+
+      // Apply slow to splash targets if splash is active
+      if (this.tower.splashRadius > 0) {
+        for (let e of game.enemies) {
+          if (e !== target && !e.markedForDeletion) {
+            let dist = Math.hypot(e.x - target.x, e.y - target.y);
+            if (dist <= this.tower.splashRadius) {
+              e.slowIntensity = this.tower.slowIntensity;
+              e.slowDuration = this.tower.slowDuration;
+            }
+          }
+        }
+      }
     }
   }
   

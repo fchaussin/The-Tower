@@ -1,5 +1,5 @@
 import { Tower } from './Tower.js';
-import { getLevelConfig } from './Levels.js';
+import { getLevelConfig, DIFFICULTY_LEVELS } from './Levels.js';
 import { Shockwave } from './Shockwave.js';
 import { TextEffect } from './TextEffect.js';
 import { ChainEffect } from './ChainEffect.js';
@@ -10,29 +10,35 @@ import { SpeedFeature } from './features/SpeedFeature.js';
 import { SplashFeature } from './features/SplashFeature.js';
 import { ChainFeature } from './features/ChainFeature.js';
 import { PoisonFeature } from './features/PoisonFeature.js';
+import { SlowFeature } from './features/SlowFeature.js';
 import { AudioManager } from './AudioManager.js';
 import { UIManager } from './UIManager.js';
 import { Renderer } from './Renderer.js';
+import { NotificationManager } from './NotificationManager.js';
+import { GAME_STATES } from './GameStates.js';
 
 export class Game {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
-    this.state = 'MENU';
+    this.state = GAME_STATES.MENU;
     this.score = 0;
+    this.difficulty = localStorage.getItem('tower_difficulty') || 'MEDIUM';
     this.playerName = localStorage.getItem('tower_playerName') || '';
     this.topScores = JSON.parse(localStorage.getItem('tower_topScores')) || [];
     
     this.audioManager = new AudioManager();
     this.uiManager = new UIManager(this);
     this.renderer = new Renderer(this, this.ctx);
+    this.notificationManager = new NotificationManager(this);
+    this.notificationManager.init();
     
     this.resize();
     window.addEventListener('resize', () => this.resize());
     this.canvas.addEventListener('click', (e) => this.handleClick(e));
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState !== 'visible' && this.state === 'PLAYING') {
-        this.state = 'PAUSED';
+      if (document.visibilityState !== 'visible' && this.state === GAME_STATES.PLAYING) {
+        this.updateState(GAME_STATES.PAUSED);
       }
     });
     
@@ -44,6 +50,40 @@ export class Game {
     this.loop = this.loop.bind(this);
     requestAnimationFrame(this.loop);
   }
+
+  updateState(newState, options = {}) {
+    if (this.state === newState && !options.force) return;
+    this.state = newState;
+
+    switch (newState) {
+      case GAME_STATES.MENU:
+        this.uiManager.showModal('mainMenu');
+        this.audioManager.playMenuMusic();
+        this.uiManager.updateMenuSoundBtn();
+        this.uiManager.updateLeaderboard();
+        break;
+      case GAME_STATES.PLAYING:
+        this.uiManager.closeAllModals();
+        this.audioManager.stopMenuMusic();
+        this.lastTime = performance.now();
+        break;
+      case GAME_STATES.PAUSED:
+        if (options.showHelp) {
+          this.uiManager.showModal('help');
+        } else {
+          this.uiManager.showModal('pause');
+        }
+        break;
+      case GAME_STATES.GAME_OVER:
+        this.uiManager.saveScore();
+        this.uiManager.showGameOver();
+        break;
+      case GAME_STATES.LIFE_LOST:
+        this.uiManager.showModal('lifeLost');
+        break;
+    }
+  }
+
   
   resize() {
     this.width = this.canvas.width = window.innerWidth;
@@ -87,11 +127,16 @@ export class Game {
     this.currency = 0;
     this.score = 0;
     this.level = 1;
+    this.currentWave = 0;
+    this.totalWaves = 0;
     this.lives = 3;
     this.time = 0;
     this.lastSpawnTime = 0;
     this.spawnInterval = 2000;
-    this.startLevel();
+    this.levelStartCurrency = 0;
+    this.levelStartScore = 0;
+    this.levelSnapshot = null;
+    this.history = []; // For control stats
     
     this.upgrades = [
       new DamageFeature(),
@@ -100,33 +145,130 @@ export class Game {
       new RangeFeature(),
       new SplashFeature(),
       new ChainFeature(),
-      new PoisonFeature()
+      new PoisonFeature(),
+      new SlowFeature()
     ];
+    
+    this.startLevel();
     this.resize();
   }
 
-  startLevel() {
-    const config = getLevelConfig(this.level);
+  startLevel(isRetry = false) {
+    const config = getLevelConfig(this.level, this.difficulty);
     
-    this.currency += config.bonusCurrency || 0;
+    if (!isRetry) {
+      this.currency += config.bonusCurrency || 0;
+      this.levelStartCurrency = this.currency;
+      this.levelStartScore = this.score;
+      this.levelSnapshot = this.getSnapshot();
+      this.history.push({ level: this.level, snapshot: this.levelSnapshot });
+    }
     this.levelEvents = config.events;
+    this.totalWaves = config.totalWaves || 0;
+    this.currentWave = 0;
     this.levelStartTime = this.time;
     this.currentEventIndex = 0;
     
-    this.spawnTextEffect(this.width / 2, this.height / 2 - 100, `LEVEL ${this.level}`, '#0df', 64, 2.5);
-    if (this.level > 1) {
+    this.spawnTextEffect(this.width / 2, this.height / 2 - 100, isRetry ? `RETRY LEVEL ${this.level}` : `LEVEL ${this.level}`, '#0df', 48, 2.5);
+    if (this.level > 1 && !isRetry) {
       this.audioManager.playLevelUp();
     }
-    if (config.bonusCurrency > 0) {
+    if (config.bonusCurrency > 0 && !isRetry) {
       this.spawnTextEffect(this.width / 2, this.height / 2 - 40, `+${this.uiManager.formatNumber(config.bonusCurrency)} Bonus!`, '#fd0', 32, 2.5);
     }
   }
 
-  gameOver() {
-    if (this.state === 'GAME_OVER') return;
-    this.state = 'GAME_OVER';
-    this.uiManager.saveScore();
-    this.uiManager.showGameOver();
+  loseLife() {
+    if (this.state !== GAME_STATES.PLAYING) return;
+    
+    this.lives--;
+    this.audioManager.playSound('lifeLost');
+    this.spawnFlash('#f00', 0.3);
+    this.spawnShockwave(this.width / 2, this.height / 2, '#f00', 100, 0.5, null, 20);
+    
+    if (this.lives <= 0) {
+      this.audioManager.playSound('gameover');
+      this.updateState(GAME_STATES.GAME_OVER);
+    } else {
+      this.updateState(GAME_STATES.LIFE_LOST);
+    }
+  }
+
+  retryLevel() {
+    // Restore from snapshot to reset upgrades/stats to level start
+    if (this.levelSnapshot) {
+      this.restoreSnapshot(this.levelSnapshot);
+    }
+    
+    // Reset current level state
+    this.enemies = [];
+    this.projectiles = [];
+    this.shockwaves = [];
+    this.textEffects = [];
+    this.chainEffects = [];
+    this.flashes = [];
+    
+    this.updateState(GAME_STATES.PLAYING);
+    this.startLevel(true);
+  }
+
+  getSnapshot() {
+    return {
+      currency: this.currency,
+      score: this.score,
+      lives: this.lives,
+      level: this.level,
+      tower: {
+        damage: this.tower.damage,
+        range: this.tower.range,
+        cooldown: this.tower.cooldown,
+        projectileSpeed: this.tower.projectileSpeed,
+        splashRadius: this.tower.splashRadius || 0,
+        splashDamage: this.tower.splashDamage || 0,
+        chainCount: this.tower.chainCount || 0,
+        poisonDamage: this.tower.poisonDamage || 0,
+        poisonDuration: this.tower.poisonDuration || 0,
+        slowIntensity: this.tower.slowIntensity || 0,
+        slowDuration: this.tower.slowDuration || 0
+      },
+      upgrades: this.upgrades.map(upg => ({
+        id: upg.id,
+        level: upg.level,
+        cost: upg.cost,
+        intensity: upg.intensity
+      }))
+    };
+  }
+
+  restoreSnapshot(snapshot) {
+    this.currency = snapshot.currency;
+    this.score = snapshot.score;
+    // We don't restore lives because losing a life is what triggered the retry
+    // this.lives = snapshot.lives; 
+    this.level = snapshot.level;
+    
+    // Restore tower
+    this.tower.damage = snapshot.tower.damage;
+    this.tower.range = snapshot.tower.range;
+    this.tower.cooldown = snapshot.tower.cooldown;
+    this.tower.projectileSpeed = snapshot.tower.projectileSpeed;
+    this.tower.splashRadius = snapshot.tower.splashRadius;
+    this.tower.splashDamage = snapshot.tower.splashDamage;
+    this.tower.chainCount = snapshot.tower.chainCount;
+    this.tower.poisonDamage = snapshot.tower.poisonDamage;
+    this.tower.poisonDuration = snapshot.tower.poisonDuration;
+    this.tower.slowIntensity = snapshot.tower.slowIntensity;
+    this.tower.slowDuration = snapshot.tower.slowDuration;
+    
+    // Restore upgrades
+    snapshot.upgrades.forEach(upgSnap => {
+      const upg = this.upgrades.find(u => u.id === upgSnap.id);
+      if (upg) {
+        upg.level = upgSnap.level;
+        upg.cost = upgSnap.cost;
+        upg.intensity = upgSnap.intensity;
+      }
+    });
   }
 
   spawnShockwave(x, y, color, maxRadius = 30, duration = 0.3, target = null, maxAmplitude = 5, isPersistent = false) {
@@ -151,38 +293,11 @@ export class Game {
     let x = e.clientX - rect.left;
     let y = e.clientY - rect.top;
 
-    if (this.state === 'MENU' || this.state === 'GAME_OVER') {
+    if (this.state === GAME_STATES.MENU || this.state === GAME_STATES.GAME_OVER || this.state === GAME_STATES.LIFE_LOST || this.state === GAME_STATES.PAUSED) {
       return;
     }
 
-    if (this.state === 'PAUSED') {
-      let cx = this.width / 2;
-      let cy = this.height / 2;
-      
-      if (x >= cx - 100 && x <= cx + 100 && y >= cy - 90 && y <= cy - 50) {
-        this.state = 'PLAYING';
-        this.lastTime = performance.now();
-      }
-      else if (x >= cx - 100 && x <= cx + 100 && y >= cy - 30 && y <= cy + 10) {
-        this.reset();
-        this.state = 'PLAYING';
-        this.lastTime = performance.now();
-      }
-      else if (x >= cx - 100 && x <= cx + 100 && y >= cy + 30 && y <= cy + 70) {
-        this.uiManager.toggleFullscreen();
-      }
-      else if (x >= cx - 100 && x <= cx + 100 && y >= cy + 90 && y <= cy + 130) {
-        this.state = 'MENU';
-        this.audioManager.playMenuMusic();
-        this.uiManager.updateMenuSoundBtn();
-        if (this.uiManager.mainMenuEl) {
-          this.uiManager.mainMenuEl.classList.remove('hidden');
-        }
-      }
-      return;
-    }
-
-    if (this.state === 'PLAYING') {
+    if (this.state === GAME_STATES.PLAYING) {
       if (x >= this.soundBox.x && x <= this.soundBox.x + this.soundBox.w &&
           y >= this.soundBox.y && y <= this.soundBox.y + this.soundBox.h) {
         this.audioManager.toggleSound();
@@ -190,14 +305,12 @@ export class Game {
       }
       if (x >= this.pauseBox.x && x <= this.pauseBox.x + this.pauseBox.w &&
           y >= this.pauseBox.y && y <= this.pauseBox.y + this.pauseBox.h) {
-        this.state = 'PAUSED';
+        this.updateState(GAME_STATES.PAUSED);
         return;
       }
       if (x >= this.helpBox.x && x <= this.helpBox.x + this.helpBox.w &&
           y >= this.helpBox.y && y <= this.helpBox.y + this.helpBox.h) {
-        this.state = 'PAUSED';
-        const helpModal = document.getElementById('help-modal');
-        if (helpModal) helpModal.classList.remove('hidden');
+        this.updateState(GAME_STATES.PAUSED, { showHelp: true });
         return;
       }
 
@@ -218,14 +331,16 @@ export class Game {
     let tx = this.width / 2;
     let ty = this.height / 2;
     
-    this.enemies.push(new EnemyClass({ x: ex, y: ey, targetX: tx, targetY: ty, isBoss }));
+    const enemy = new EnemyClass({ x: ex, y: ey, targetX: tx, targetY: ty, isBoss });
+    enemy.applyDifficulty(DIFFICULTY_LEVELS[this.difficulty]);
+    this.enemies.push(enemy);
   }
 
   loop(timestamp) {
     let dt = (timestamp - this.lastTime) / 1000;
     this.lastTime = timestamp;
     
-    if (this.state === 'PLAYING') {
+    if (this.state === GAME_STATES.PLAYING) {
       this.time += dt * 1000;
       
       let levelTime = this.time - this.levelStartTime;
@@ -233,6 +348,7 @@ export class Game {
       while (this.currentEventIndex < this.levelEvents.length && 
              levelTime >= this.levelEvents[this.currentEventIndex].time) {
         const event = this.levelEvents[this.currentEventIndex];
+        this.currentWave = event.wave;
         this.spawnEnemy(event.type, event.isBoss);
         this.currentEventIndex++;
       }

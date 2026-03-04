@@ -66,7 +66,7 @@
   <h2>LOADING…</h2>
 </div>
 <div id="ui-layer">
-  <div id="main-menu" class="menu-container">
+  <dialog id="main-menu" class="menu-container">
     <h1 style="font-variant: small-caps;">Idle Tower Defense</h1>
     
     <div id="auth-section" class="hidden" style="margin-bottom: 20px; text-align: center;">
@@ -79,10 +79,20 @@
       <label for="playerName">Player Name:</label>
       <input type="text" id="playerName" placeholder="Enter your name" maxlength="15" />
     </div>
-    <div style="display: flex; gap: 10px;">
-      <button id="startBtn" class="btn" style="flex: 1;">START GAME</button>
-      <button id="helpBtn" class="btn" style="width: 50px; padding: 10px;">?</button>
-      <button id="menuSoundBtn" class="btn" style="width: 50px; padding: 10px; color: #f00; border-color: #f00;">🔇</button>
+    <div class="input-group" style="margin-bottom: 20px;">
+      <label for="difficultySelect">Difficulty:</label>
+      <select id="difficultySelect" style="width: 100%; background: #222; color: #fff; border: 1px solid #444; padding: 10px; border-radius: 4px; font-family: monospace; cursor: pointer;">
+        <option value="EASY">Easy (Relaxed)</option>
+        <option value="MEDIUM" selected>Medium (Standard)</option>
+        <option value="HARD">Hard (Challenge)</option>
+      </select>
+    </div>
+    <div class="flex flex-col sm:flex-row gap-2 sm:gap-[10px] mb-8 sm:mb-0" style="margin-bottom: 20px;">
+      <button id="startBtn" class="btn !mb-0" style="flex: 1;">START GAME</button>
+      <div class="flex gap-2 sm:gap-[10px] justify-center">
+        <button id="helpBtn" class="btn !mb-0" style="width: 50px; padding: 10px;">?</button>
+        <button id="menuSoundBtn" class="btn !mb-0" style="width: 50px; padding: 10px; color: #f00; border-color: #f00;">🔇</button>
+      </div>
     </div>
     <button id="fullscreenBtn" class="btn secondary" style="margin-bottom: 20px; font-size: 14px;">
       ENTER FULL SCREEN
@@ -96,9 +106,9 @@
       </div>
       <ul id="scoreList" class="hidden"></ul>
     </div>
-  </div>
+  </dialog>
   
-  <div id="game-over-menu" class="menu-container hidden">
+  <dialog id="game-over-menu" class="menu-container">
     <h1>GAME OVER</h1>
     <p id="finalScore">Score: 0</p>
     <p id="finalLevel">Level: 1</p>
@@ -106,9 +116,19 @@
       <button id="restartBtn" class="btn">PLAY AGAIN</button>
       <button id="mainMenuBtn" class="btn secondary">MAIN MENU</button>
     </div>
-  </div>
+  </dialog>
 
-  <div id="help-modal" class="menu-container hidden" style="max-height: 80vh; overflow-y: auto;">
+  <dialog id="life-lost-menu" class="menu-container">
+    <h1 style="color: #f44;">LIFE LOST</h1>
+    <p>An enemy reached the tower!</p>
+    <p style="font-size: 14px; color: #f88; margin-top: 10px;">Penalty: Progress since level start is lost</p>
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+      <button id="retryLevelBtn" class="btn" style="background: #f44;">RETRY LEVEL</button>
+      <button id="mainMenuFromLifeLostBtn" class="btn secondary">MAIN MENU</button>
+    </div>
+  </dialog>
+
+  <dialog id="help-modal" class="menu-container" style="max-height: 80vh; overflow-y: auto;">
     <h2>Tower Upgrades</h2>
     <div style="text-align: left; margin-top: 20px; font-size: 14px; line-height: 1.5;">
       <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
@@ -139,9 +159,23 @@
         <canvas id="icon-poison" width="30" height="30"></canvas>
         <div><strong>Poison:</strong> Applies damage over time to enemies hit.</div>
       </div>
+      <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+        <canvas id="icon-slow" width="30" height="30"></canvas>
+        <div><strong>Slow:</strong> Reduces enemy movement speed for a duration.</div>
+      </div>
     </div>
     <button id="closeHelpBtn" class="btn" style="margin-top: 20px;">CLOSE</button>
-  </div>
+  </dialog>
+
+  <dialog id="pause-menu" class="menu-container">
+    <h1>PAUSED</h1>
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+      <button id="resumeBtn" class="btn" style="border-color: #0cf; color: #0cf;">RESUME</button>
+      <button id="resetBtn" class="btn secondary">RESET LEVEL</button>
+      <button id="pauseFullscreenBtn" class="btn secondary">TOGGLE FULLSCREEN</button>
+      <button id="exitBtn" class="btn secondary">MAIN MENU</button>
+    </div>
+  </dialog>
 </div>
 <canvas id="gameCanvas"></canvas>
 <script type="module" src="/src/main.js"></script>

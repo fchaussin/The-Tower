@@ -9,14 +9,16 @@ export class CooldownFeature extends TowerFeature {
       costAddition: 5,
       baseIntensity: 0.85,
       intensityMultiplier: 1,
-      intensityAddition: 0.01,
+      intensityAddition: 0.005,
       color: '#fff'
     });
   }
 
   apply(tower, intensity) {
-    // Diminishing returns: reduces cooldown by intensity each time
-    tower.cooldown = Math.max(20, tower.cooldown * intensity);
+    // Ensure intensity stays below 1.0 to prevent cooldown from increasing
+    // We cap it at 0.99 to ensure it's always at least a tiny upgrade
+    const safeIntensity = Math.min(0.99, intensity);
+    tower.cooldown = Math.max(20, tower.cooldown * safeIntensity);
   }
 
   draw(ctx, x, y, w, h, color) {

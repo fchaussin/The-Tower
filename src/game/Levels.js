@@ -40,12 +40,19 @@ class WaveBuilder {
   constructor() {
     this.events = [];
     this.currentTime = 0;
+    this.currentWave = 0;
+  }
+  
+  // Start a new wave
+  nextWave() {
+    this.currentWave++;
+    return this;
   }
   
   // Add a sequence of the same enemy
   addSeries(EnemyClass, count, intervalMs, isBoss = false) {
     for (let i = 0; i < count; i++) {
-      this.events.push({ time: this.currentTime, type: EnemyClass, isBoss });
+      this.events.push({ time: this.currentTime, type: EnemyClass, isBoss, wave: this.currentWave });
       this.currentTime += intervalMs;
     }
     return this;
@@ -58,7 +65,7 @@ class WaveBuilder {
     for (let seq of sequences) {
       let t = start;
       for (let i = 0; i < seq.count; i++) {
-        this.events.push({ time: t, type: seq.type, isBoss: seq.isBoss || false });
+        this.events.push({ time: t, type: seq.type, isBoss: seq.isBoss || false, wave: this.currentWave });
         t += seq.intervalMs;
       }
       if (t > maxTime) maxTime = t;
@@ -80,9 +87,40 @@ class WaveBuilder {
   }
 }
 
-export function getLevelConfig(level) {
+export const DIFFICULTY_LEVELS = {
+  EASY: {
+    id: 'EASY',
+    name: 'Easy',
+    enemyCountMult: 0.7,
+    enemySpeedMult: 0.8,
+    enemyHealthMult: 0.7,
+    currencyBonusMult: 1.2,
+    color: '#0f0'
+  },
+  MEDIUM: {
+    id: 'MEDIUM',
+    name: 'Medium',
+    enemyCountMult: 1.0,
+    enemySpeedMult: 1.0,
+    enemyHealthMult: 1.0,
+    currencyBonusMult: 1.0,
+    color: '#ff0'
+  },
+  HARD: {
+    id: 'HARD',
+    name: 'Hard',
+    enemyCountMult: 1.4,
+    enemySpeedMult: 1.2,
+    enemyHealthMult: 1.5,
+    currencyBonusMult: 0.8,
+    color: '#f00'
+  }
+};
+
+export function getLevelConfig(level, difficultyId = 'MEDIUM') {
   const builder = new WaveBuilder();
   const cfg = DIFFICULTY_CONFIG;
+  const diff = DIFFICULTY_LEVELS[difficultyId] || DIFFICULTY_LEVELS.MEDIUM;
   
   // 57 enemies total. We map each level to its corresponding enemy.
   // If level > 57, it loops back but with higher difficulty multipliers.
@@ -90,8 +128,8 @@ export function getLevelConfig(level) {
   const loop = Math.floor((level - 1) / EnemyList.length);
   
   // Exponential scaling for infinite difficulty
-  const swarmDifficultyMult = Math.pow(cfg.swarmCountMultiplier, level - 1); 
-  const speedDifficultyMult = Math.pow(cfg.spawnSpeedMultiplier, level - 1);
+  const swarmDifficultyMult = Math.pow(cfg.swarmCountMultiplier, level - 1) * diff.enemyCountMult; 
+  const speedDifficultyMult = Math.pow(cfg.spawnSpeedMultiplier, level - 1) / diff.enemySpeedMult; // Lower interval means faster
   
   // Controlled randomness: +/- 20% variance around a base value
   const vary = (val) => val * (0.8 + Math.random() * 0.4);
@@ -117,25 +155,28 @@ export function getLevelConfig(level) {
   const swarmCount = Math.floor(vary(cfg.baseSwarmCount * swarmDifficultyMult));
   const swarmInterval = Math.max(cfg.minSwarmInterval, vary(cfg.baseSwarmInterval * speedDifficultyMult));
   
-  const coreCount = Math.floor(vary((cfg.baseCoreCount + level * cfg.coreCountLinear) * (1 + loop * cfg.loopDifficultyMultiplier)));
+  const coreCount = Math.floor(vary((cfg.baseCoreCount + level * cfg.coreCountLinear) * (1 + loop * cfg.loopDifficultyMultiplier) * diff.enemyCountMult));
   const coreInterval = Math.max(cfg.minCoreInterval, vary(cfg.baseCoreInterval * speedDifficultyMult));
   
-  const eliteCount = Math.floor(vary((cfg.baseEliteCount + level * cfg.eliteCountLinear) * (1 + loop * cfg.loopDifficultyMultiplier)));
+  const eliteCount = Math.floor(vary((cfg.baseEliteCount + level * cfg.eliteCountLinear) * (1 + loop * cfg.loopDifficultyMultiplier) * diff.enemyCountMult));
   const eliteInterval = Math.max(cfg.minEliteInterval, vary(cfg.baseEliteInterval * speedDifficultyMult));
 
   // --- WAVE 1: The Swarm ---
   // Tests raw attack speed and splash damage early in the level
-  builder.addSeries(SwarmEnemy, swarmCount, swarmInterval)
+  builder.nextWave()
+         .addSeries(SwarmEnemy, swarmCount, swarmInterval)
          .wait(vary(cfg.baseWaitTime));
          
   // --- WAVE 2: The Core ---
   // Introduces the current tier's main enemy
-  builder.addSeries(CoreEnemy, coreCount, coreInterval)
+  builder.nextWave()
+         .addSeries(CoreEnemy, coreCount, coreInterval)
          .wait(vary(cfg.baseWaitTime));
          
   // --- WAVE 3: The Assault (Concurrent) ---
   // Mixes swarms with elites to protect the elites from single-target damage
-  builder.addConcurrent([
+  builder.nextWave()
+         .addConcurrent([
     { type: SwarmEnemy, count: Math.floor(swarmCount * 1.5), intervalMs: swarmInterval * 0.8 },
     { type: EliteEnemy, count: eliteCount, intervalMs: eliteInterval },
     { type: CoreEnemy, count: coreCount, intervalMs: coreInterval }
@@ -143,6 +184,7 @@ export function getLevelConfig(level) {
   
   // --- WAVE 4: Boss (Every 5 levels) ---
   if (level % 5 === 0) {
+    builder.nextWave();
     // Pick a boss from slightly ahead in the list (or loop back if at the end)
     const bossIndex = Math.min(EnemyList.length - 1, levelIndex + 5);
     const BossEnemy = EnemyList[bossIndex];
@@ -158,6 +200,7 @@ export function getLevelConfig(level) {
   
   return {
     events: builder.build(),
-    bonusCurrency: Math.floor(cfg.baseBonusCurrency + (level - 1) * cfg.currencyPerLevel)
+    totalWaves: builder.currentWave,
+    bonusCurrency: Math.floor((cfg.baseBonusCurrency + (level - 1) * cfg.currencyPerLevel) * diff.currencyBonusMult)
   };
 }
