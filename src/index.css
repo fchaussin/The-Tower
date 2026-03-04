@@ -16,10 +16,22 @@ h1 {
 
 canvas {
   display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#game-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background-color: #111;
 }
 
 #ui-layer {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
@@ -43,12 +55,49 @@ dialog.menu-container {
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
   font-family: monospace;
   overflow-y: auto;
-  max-height: 100dvh;
+  max-height: 90dvh;
   margin: auto;
+  inset: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+dialog.menu-container::before,
+dialog.menu-container::after {
+  content: '';
+  margin: auto;
+}
+
+dialog.menu-container[open] {
+  display: flex;
 }
 
 dialog.menu-container:not([open]) {
   display: none;
+}
+
+@media (max-width: 640px) {
+  dialog.menu-container {
+    width: 100vw;
+    height: 100dvh;
+    max-width: 100vw;
+    max-height: 100dvh;
+    border-radius: 0;
+    border: none;
+    padding: 20px;
+    top: 0;
+    left: 0;
+    transform: none;
+    display: block;
+  }
+  dialog.menu-container h1 {
+    font-size: 2rem;
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
 }
 
 dialog.menu-container::backdrop {
@@ -59,10 +108,11 @@ dialog.menu-container::backdrop {
 dialog.menu-container h1 {
   font-size: 3rem;
   margin-top: 0;
-  margin-bottom: 30px;
+  margin-bottom: 0;
   color: #0df;
   text-shadow: 0 0 10px rgba(0, 221, 255, 0.5);
   line-height: 1;
+  font-variant: small-caps;
 }
 
 dialog.menu-container h2 {
@@ -73,7 +123,7 @@ dialog.menu-container h2 {
 }
 
 .input-group {
-  margin-bottom: 20px;
+  width: 100%;
   text-align: left;
 }
 
@@ -110,7 +160,6 @@ dialog.menu-container h2 {
   border-radius: 4px;
   cursor: pointer;
   width: 100%;
-  margin-bottom: 30px;
   font-family: monospace;
   text-align: center;
   transition: all 0.2s;
@@ -132,6 +181,7 @@ dialog.menu-container h2 {
 
 
 .leaderboard {
+  width: 100%;
   text-align: left;
   border-top: 1px solid #333;
   padding-top: 20px;

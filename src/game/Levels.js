@@ -3,12 +3,12 @@ import { EnemyList } from './enemies/EnemyList.js';
 // Configuration object to easily tweak the hardness progression
 export const DIFFICULTY_CONFIG = {
   // Exponential Growth Multipliers
-  swarmCountMultiplier: 1.08,
-  spawnSpeedMultiplier: 0.95,
+  swarmCountMultiplier: 1.05,
+  spawnSpeedMultiplier: 0.98,
   
   // Linear Growth Multipliers (added per level)
-  coreCountLinear: 1.1,
-  eliteCountLinear: 0.4,
+  coreCountLinear: 0.8,
+  eliteCountLinear: 0.2,
   
   // Loop Multiplier (extra difficulty per full 57-level loop)
   loopDifficultyMultiplier: 0.5, 
@@ -29,8 +29,8 @@ export const DIFFICULTY_CONFIG = {
   minEliteInterval: 300,
   
   // Currency and Timings
-  baseBonusCurrency: 80,
-  currencyPerLevel: 50,
+  baseBonusCurrency: 150,
+  currencyPerLevel: 100,
   baseWaitTime: 2000,
   assaultWaitTime: 3000,
   bossWaitTime: 4000
@@ -91,28 +91,28 @@ export const DIFFICULTY_LEVELS = {
   EASY: {
     id: 'EASY',
     name: 'Easy',
-    enemyCountMult: 0.7,
+    enemyCountMult: 0.5,
     enemySpeedMult: 0.8,
-    enemyHealthMult: 0.7,
-    currencyBonusMult: 1.2,
+    enemyHealthMult: 0.5,
+    currencyBonusMult: 1.5,
     color: '#0f0'
   },
   MEDIUM: {
     id: 'MEDIUM',
     name: 'Medium',
-    enemyCountMult: 1.0,
+    enemyCountMult: 0.8,
     enemySpeedMult: 1.0,
-    enemyHealthMult: 1.0,
-    currencyBonusMult: 1.0,
+    enemyHealthMult: 0.8,
+    currencyBonusMult: 1.2,
     color: '#ff0'
   },
   HARD: {
     id: 'HARD',
     name: 'Hard',
-    enemyCountMult: 1.4,
+    enemyCountMult: 1.2,
     enemySpeedMult: 1.2,
-    enemyHealthMult: 1.5,
-    currencyBonusMult: 0.8,
+    enemyHealthMult: 1.2,
+    currencyBonusMult: 1.0,
     color: '#f00'
   }
 };

@@ -46,52 +46,52 @@ export class Renderer {
   drawHUD() {
     const ui = this.game.uiManager;
     
+    // Lives (First line)
+    this.ctx.fillStyle = '#f00';
+    this.ctx.font = '20px monospace';
+    this.ctx.textAlign = 'center';
+    this.ctx.fillText('♥', 30, 35);
+    this.ctx.fillStyle = '#fff'; 
+    this.ctx.textAlign = 'left'; 
+    this.ctx.fillText(Math.max(0, this.game.lives), 50, 37);
+
     // Currency
     this.ctx.fillStyle = '#fd0';
-    this.ctx.beginPath(); this.ctx.arc(30, 30, 12, 0, Math.PI*2); this.ctx.fill();
-    this.ctx.fillStyle = '#000'; this.ctx.font = '14px monospace'; this.ctx.textAlign = 'center'; this.ctx.fillText('$', 30, 35);
-    this.ctx.fillStyle = '#fff'; this.ctx.textAlign = 'left'; this.ctx.font = '20px monospace'; this.ctx.fillText(ui.formatNumber(this.game.currency), 50, 37);
+    this.ctx.beginPath(); this.ctx.arc(30, 65, 12, 0, Math.PI*2); this.ctx.fill();
+    this.ctx.fillStyle = '#000'; this.ctx.font = '14px monospace'; this.ctx.textAlign = 'center'; this.ctx.fillText('$', 30, 70);
+    this.ctx.fillStyle = '#fff'; this.ctx.textAlign = 'left'; this.ctx.font = '20px monospace'; this.ctx.fillText(ui.formatNumber(this.game.currency), 50, 72);
     
     // Score
     this.ctx.fillStyle = '#0df';
     this.ctx.beginPath();
     for(let i=0; i<5; i++) {
-      this.ctx.lineTo(30 + 12*Math.cos(-Math.PI/2 + i*2*Math.PI/5), 65 + 12*Math.sin(-Math.PI/2 + i*2*Math.PI/5));
-      this.ctx.lineTo(30 + 5*Math.cos(-Math.PI/2 + (i+0.5)*2*Math.PI/5), 65 + 5*Math.sin(-Math.PI/2 + (i+0.5)*2*Math.PI/5));
+      this.ctx.lineTo(30 + 12*Math.cos(-Math.PI/2 + i*2*Math.PI/5), 100 + 12*Math.sin(-Math.PI/2 + i*2*Math.PI/5));
+      this.ctx.lineTo(30 + 5*Math.cos(-Math.PI/2 + (i+0.5)*2*Math.PI/5), 100 + 5*Math.sin(-Math.PI/2 + (i+0.5)*2*Math.PI/5));
     }
     this.ctx.closePath(); this.ctx.fill();
-    this.ctx.fillStyle = '#fff'; this.ctx.fillText(ui.formatNumber(this.game.score), 50, 72);
+    this.ctx.fillStyle = '#fff'; this.ctx.fillText(ui.formatNumber(this.game.score), 50, 107);
     
     // Level & Wave
     this.ctx.fillStyle = '#f0f';
     this.ctx.beginPath();
-    this.ctx.moveTo(30, 95); this.ctx.lineTo(35, 105); this.ctx.lineTo(25, 105);
+    this.ctx.moveTo(30, 130); this.ctx.lineTo(35, 140); this.ctx.lineTo(25, 140);
     this.ctx.closePath(); this.ctx.fill();
     this.ctx.fillStyle = '#fff'; 
     this.ctx.textAlign = 'left';
-    this.ctx.fillText(`Lvl ${this.game.level}`, 50, 107);
+    this.ctx.fillText(`Lvl ${this.game.level}`, 50, 142);
     
     if (this.game.totalWaves > 0) {
       this.ctx.font = '14px monospace';
       this.ctx.fillStyle = '#aaa';
-      this.ctx.fillText(`Wave ${this.game.currentWave}/${this.game.totalWaves}`, 50, 122);
+      this.ctx.fillText(`Wave ${this.game.currentWave}/${this.game.totalWaves}`, 50, 157);
       
       // Difficulty indicator
       const diff = this.game.difficulty;
       const diffColor = diff === 'EASY' ? '#0f0' : (diff === 'HARD' ? '#f00' : '#ff0');
       this.ctx.fillStyle = diffColor;
       this.ctx.font = '12px monospace';
-      this.ctx.fillText(diff, 50, 137);
+      this.ctx.fillText(diff, 50, 172);
     }
-
-    // Lives
-    this.ctx.fillStyle = '#f00';
-    this.ctx.font = '20px monospace';
-    this.ctx.textAlign = 'center';
-    this.ctx.fillText('♥', 30, 172);
-    this.ctx.fillStyle = '#fff'; 
-    this.ctx.textAlign = 'left'; 
-    this.ctx.fillText(Math.max(0, this.game.lives), 50, 172);
   }
 
   drawUpgrades() {

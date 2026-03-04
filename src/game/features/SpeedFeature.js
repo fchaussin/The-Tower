@@ -4,12 +4,12 @@ export class SpeedFeature extends TowerFeature {
   constructor() {
     super({
       id: 'speed',
-      baseCost: 100,
-      costMultiplier: 1.5,
-      costAddition: 30,
-      baseIntensity: 10,
+      baseCost: 50,
+      costMultiplier: 1.3,
+      costAddition: 10,
+      baseIntensity: 50,
       intensityMultiplier: 1,
-      intensityAddition: 2,
+      intensityAddition: 10,
       color: '#ff0'
     });
   }

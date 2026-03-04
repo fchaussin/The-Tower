@@ -1,5 +1,6 @@
 export class ModalManager {
   constructor() {
+    this.currentModal = null;
     this.modals = {
       mainMenu: document.getElementById('main-menu'),
       gameOver: document.getElementById('game-over-menu'),
@@ -11,6 +12,7 @@ export class ModalManager {
 
   showModal(modalName) {
     this.closeAllModals();
+    this.currentModal = modalName;
     const modalEl = this.modals[modalName];
     if (modalEl && !modalEl.open) {
       modalEl.style.pointerEvents = 'auto';
@@ -19,6 +21,7 @@ export class ModalManager {
   }
 
   closeAllModals() {
+    this.currentModal = null;
     Object.values(this.modals).forEach(m => {
       if (m && m.open) {
         m.style.pointerEvents = 'none';

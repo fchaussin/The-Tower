@@ -4,11 +4,11 @@ export class DamageFeature extends TowerFeature {
   constructor() {
     super({
       id: 'damage',
-      baseCost: 20,
-      costMultiplier: 1.5,
-      costAddition: 20,
-      baseIntensity: 0.75,
-      intensityMultiplier: 1.1,
+      baseCost: 15,
+      costMultiplier: 1.3,
+      costAddition: 10,
+      baseIntensity: 1.0,
+      intensityMultiplier: 1.2,
       intensityAddition: 0,
       color: '#f00'
     });

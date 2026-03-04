@@ -109,8 +109,8 @@ export class Enemy extends Entity {
       game.spawnFlash(this.color, flashDuration);
     }
   }
-  getCurrencyValue() { return 1; }
-  getScoreValue() { return 10; }
+  getCurrencyValue() { return Math.max(1, Math.ceil(this.maxHealth / 2)); }
+  getScoreValue() { return Math.max(10, Math.ceil(this.maxHealth * 5)); }
   draw(ctx) {
     ctx.beginPath();
     

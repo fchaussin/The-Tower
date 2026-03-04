@@ -5,9 +5,9 @@ export class Tower extends Entity {
   constructor(x, y) {
     super(x, y);
     this.radius = 20;
-    this.damage = 1;
+    this.damage = 2;
     this.range = 200;
-    this.cooldown = 500;
+    this.cooldown = 400;
     this.projectileSpeed = 400;
     this.lastFireTime = 0;
     this.highlightRangeTimer = 0;

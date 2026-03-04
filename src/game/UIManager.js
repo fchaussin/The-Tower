@@ -138,6 +138,14 @@ export class UIManager {
       });
     } else console.warn('helpBtn not found');
 
+    document.addEventListener('fullscreenchange', () => {
+      const modalName = this.modalManager.currentModal;
+      if (modalName) {
+        // Re-open the modal to ensure it's in the top layer of the current fullscreen state
+        this.modalManager.showModal(modalName);
+      }
+    });
+
     const closeHelpBtn = document.getElementById('closeHelpBtn');
     if (closeHelpBtn) {
       closeHelpBtn.addEventListener('click', () => {
@@ -239,12 +247,25 @@ export class UIManager {
   }
 
   toggleFullscreen() {
+    const elem = document.documentElement;
     if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(err => {
-        console.error(`Error attempting to enable full-screen mode: ${err.message}`);
-      });
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen().catch(err => {
+          console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+        });
+      } else if (elem.webkitRequestFullscreen) { /* Safari */
+        elem.webkitRequestFullscreen();
+      } else if (elem.msRequestFullscreen) { /* IE11 */
+        elem.msRequestFullscreen();
+      }
     } else {
-      document.exitFullscreen();
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) { /* Safari */
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) { /* IE11 */
+        document.msExitFullscreen();
+      }
     }
   }
 
