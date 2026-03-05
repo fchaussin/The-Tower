@@ -16,6 +16,7 @@ import { UIManager } from './UIManager.js';
 import { Renderer } from './Renderer.js';
 import { NotificationManager } from './NotificationManager.js';
 import { GAME_STATES } from './GameStates.js';
+import { Simulator } from './Simulator.js';
 
 export class Game {
   constructor(canvas) {
@@ -48,6 +49,9 @@ export class Game {
     this.reset();
     this.lastTime = performance.now();
     this.loop = this.loop.bind(this);
+    
+    window.runSimulation = (targetLevel) => Simulator.run(this, targetLevel);
+    
     requestAnimationFrame(this.loop);
   }
 
@@ -324,54 +328,70 @@ export class Game {
   }
 
   spawnEnemy(EnemyClass, isBoss = false) {
+    if (!EnemyClass) return;
+    
     this.spawnAngle = (this.spawnAngle || 0) + Math.PI * 0.37;
-    let dist = Math.max(this.width, this.height);
-    let ex = this.width / 2 + Math.cos(this.spawnAngle) * dist;
-    let ey = this.height / 2 + Math.sin(this.spawnAngle) * dist;
+    
+    const cos = Math.cos(this.spawnAngle);
+    const sin = Math.sin(this.spawnAngle);
+    
+    // Calculate distance to the screen edge (plus a 50px buffer)
+    const distX = Math.abs((this.width / 2 + 50) / (cos === 0 ? 0.0001 : cos));
+    const distY = Math.abs((this.height / 2 + 50) / (sin === 0 ? 0.0001 : sin));
+    const dist = Math.min(distX, distY);
+    
+    let ex = this.width / 2 + cos * dist;
+    let ey = this.height / 2 + sin * dist;
     let tx = this.width / 2;
     let ty = this.height / 2;
     
     const enemy = new EnemyClass({ x: ex, y: ey, targetX: tx, targetY: ty, isBoss });
-    enemy.applyDifficulty(DIFFICULTY_LEVELS[this.difficulty]);
+    enemy.applyDifficulty(DIFFICULTY_LEVELS[this.difficulty], this.level);
     this.enemies.push(enemy);
   }
 
+  update(dt) {
+    this.time += dt * 1000;
+    
+    let levelTime = this.time - this.levelStartTime;
+    
+    while (this.currentEventIndex < this.levelEvents.length && 
+           levelTime >= this.levelEvents[this.currentEventIndex].time) {
+      const event = this.levelEvents[this.currentEventIndex];
+      this.currentWave = event.wave;
+      this.spawnEnemy(event.type, event.isBoss);
+      this.currentEventIndex++;
+    }
+    
+    if (this.currentEventIndex >= this.levelEvents.length && this.enemies.length === 0) {
+      this.level++;
+      this.startLevel();
+    }
+    
+    this.tower.update(dt, this);
+    this.enemies.forEach(e => e.update(dt, this));
+    this.projectiles.forEach(p => p.update(dt, this));
+    this.shockwaves.forEach(s => s.update(dt));
+    this.textEffects.forEach(t => t.update(dt));
+    this.chainEffects.forEach(c => c.update(dt));
+    this.flashes.forEach(f => f.life -= dt);
+    
+    this.enemies = this.enemies.filter(e => !e.markedForDeletion);
+    this.projectiles = this.projectiles.filter(p => !p.markedForDeletion);
+    this.shockwaves = this.shockwaves.filter(s => !s.markedForDeletion);
+    this.textEffects = this.textEffects.filter(t => !t.markedForDeletion);
+    this.chainEffects = this.chainEffects.filter(c => !c.markedForDeletion);
+    this.flashes = this.flashes.filter(f => f.life > 0);
+  }
+
   loop(timestamp) {
+    if (this.isHeadless) return;
+
     let dt = (timestamp - this.lastTime) / 1000;
     this.lastTime = timestamp;
     
     if (this.state === GAME_STATES.PLAYING) {
-      this.time += dt * 1000;
-      
-      let levelTime = this.time - this.levelStartTime;
-      
-      while (this.currentEventIndex < this.levelEvents.length && 
-             levelTime >= this.levelEvents[this.currentEventIndex].time) {
-        const event = this.levelEvents[this.currentEventIndex];
-        this.currentWave = event.wave;
-        this.spawnEnemy(event.type, event.isBoss);
-        this.currentEventIndex++;
-      }
-      
-      if (this.currentEventIndex >= this.levelEvents.length && this.enemies.length === 0) {
-        this.level++;
-        this.startLevel();
-      }
-      
-      this.tower.update(dt, this);
-      this.enemies.forEach(e => e.update(dt, this));
-      this.projectiles.forEach(p => p.update(dt, this));
-      this.shockwaves.forEach(s => s.update(dt));
-      this.textEffects.forEach(t => t.update(dt));
-      this.chainEffects.forEach(c => c.update(dt));
-      this.flashes.forEach(f => f.life -= dt);
-      
-      this.enemies = this.enemies.filter(e => !e.markedForDeletion);
-      this.projectiles = this.projectiles.filter(p => !p.markedForDeletion);
-      this.shockwaves = this.shockwaves.filter(s => !s.markedForDeletion);
-      this.textEffects = this.textEffects.filter(t => !t.markedForDeletion);
-      this.chainEffects = this.chainEffects.filter(c => !c.markedForDeletion);
-      this.flashes = this.flashes.filter(f => f.life > 0);
+      this.update(dt);
     }
     
     this.renderer.draw();

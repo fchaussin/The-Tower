@@ -21,14 +21,19 @@ export class Enemy extends Entity {
     this.originalSpeed = speed;
     this.updateVelocity();
   }
-  applyDifficulty(settings) {
+  applyDifficulty(settings, level = 1) {
     if (!settings) return;
+    
+    // Infinite scaling: +15% health per level, +2% speed per level (capped at 2.5x)
+    const infiniteHealthMult = Math.pow(1.15, Math.max(0, level - 1));
+    const infiniteSpeedMult = Math.min(2.5, Math.pow(1.02, Math.max(0, level - 1)));
+
     if (settings.enemyHealthMult) {
-      this.maxHealth *= settings.enemyHealthMult;
+      this.maxHealth = Math.ceil(this.maxHealth * settings.enemyHealthMult * infiniteHealthMult);
       this.health = this.maxHealth;
     }
     if (settings.enemySpeedMult) {
-      this.speed *= settings.enemySpeedMult;
+      this.speed = this.speed * settings.enemySpeedMult * infiniteSpeedMult;
       this.originalSpeed = this.speed;
       this.updateVelocity();
     }
@@ -109,8 +114,8 @@ export class Enemy extends Entity {
       game.spawnFlash(this.color, flashDuration);
     }
   }
-  getCurrencyValue() { return Math.max(1, Math.ceil(this.maxHealth / 2)); }
-  getScoreValue() { return Math.max(10, Math.ceil(this.maxHealth * 5)); }
+  getCurrencyValue() { return 1; }
+  getScoreValue() { return 10; }
   draw(ctx) {
     ctx.beginPath();
     

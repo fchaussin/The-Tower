@@ -5,11 +5,10 @@ export class CooldownFeature extends TowerFeature {
     super({
       id: 'cooldown',
       baseCost: 15,
-      costMultiplier: 1.2,
-      costAddition: 5,
-      baseIntensity: 0.80,
+      costMultiplier: 1.15,
+      baseIntensity: 0.95,
       intensityMultiplier: 1,
-      intensityAddition: 0.005,
+      intensityAddition: 0,
       color: '#fff'
     });
   }

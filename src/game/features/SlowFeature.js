@@ -5,12 +5,11 @@ export class SlowFeature extends TowerFeature {
     super({
       id: 'slow',
       baseCost: 150,
-      costMultiplier: 2.0,
-      costAddition: 50,
-      baseIntensity: 0.2, // 20% slow
+      costMultiplier: 1.3,
+      baseIntensity: 0.05,
       intensityMultiplier: 1,
-      intensityAddition: 0.05, // +5% slow per level
-      color: '#4af' // Light blue for slow
+      intensityAddition: 0,
+      color: '#4af'
     });
   }
 
