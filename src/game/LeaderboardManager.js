@@ -26,7 +26,7 @@ export class LeaderboardManager {
     let fbScores = [];
     if (isFirebaseEnabled) {
       try {
-        const q = query(collection(db, LEADERBOARD_COLLECTION), orderBy('score', 'desc'), limit(10));
+        const q = query(collection(db, LEADERBOARD_COLLECTION), orderBy('score', 'desc'), limit(150));
         const querySnapshot = await Promise.race([
           getDocs(q),
           new Promise((_, reject) => setTimeout(() => reject(new Error('Firebase timeout')), 5000))

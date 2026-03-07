@@ -34,7 +34,6 @@ export class Help {
   init() {
     this.buildCarousel();
     this.setupEvents();
-    this.startAnimationLoop();
   }
 
   buildCarousel() {

@@ -5,7 +5,9 @@ export class ModalManager {
       mainMenu: document.getElementById('main-menu'),
       gameOver: document.getElementById('game-over-menu'),
       lifeLost: document.getElementById('life-lost-menu'),
-      help: document.getElementById('help-modal'),
+      helpMenu: document.getElementById('help-menu'),
+      towerFeatures: document.getElementById('tower-features-modal'),
+      scoring: document.getElementById('scoring-modal'),
       pause: document.getElementById('pause-menu'),
       confirm: document.getElementById('confirm-modal')
     };

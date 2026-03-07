@@ -128,7 +128,17 @@
       </div>
     </dialog>
 
-    <dialog id="help-modal" class="menu-container help-carousel-modal">
+    <dialog id="help-menu" class="menu-container">
+      <h1>Help</h1>
+      <p>Defend your central tower against endless waves of geometric enemies. Upgrade your tower to survive longer!</p>
+      <div class="btn-group">
+        <button id="openTowerFeaturesBtn" class="btn">Tower Features</button>
+        <button id="openScoringBtn" class="btn">Scoring</button>
+        <button id="closeHelpMenuBtn" class="btn secondary">Close</button>
+      </div>
+    </dialog>
+
+    <dialog id="tower-features-modal" class="menu-container help-carousel-modal">
       <h1>Tower Upgrades</h1>
       <div class="carousel-container">
         <button id="prevHelpBtn" class="carousel-btn">&lt;</button>
@@ -140,7 +150,20 @@
         <button id="nextHelpBtn" class="carousel-btn">&gt;</button>
       </div>
       <div class="carousel-indicators" id="helpCarouselIndicators"></div>
-      <button id="closeHelpBtn" class="btn">CLOSE</button>
+      <button id="closeTowerFeaturesBtn" class="btn">CLOSE</button>
+    </dialog>
+
+    <dialog id="scoring-modal" class="menu-container">
+      <h1>Scoring System</h1>
+      <p class="scoring-item">
+        <svg class="local" width="16" height="16" viewBox="0 0 32 32" enable-background="new 0 0 32 32"><polygon fill="none" stroke="currentColor" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2" points="31,16 31,19 27,19 27,31 21,31 21,19 11,19 11,31 5,31 5,19 1,19 1,16 16,1 21,6 21,1 27,1 27,12"/></svg>
+        <strong>Local Scores:</strong> <div class="description">Saved directly on your device. Always available.</div>
+      </p>
+      <p class="scoring-item">
+        <svg class="global" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+        <strong>Global Scores:</strong> <div class="description">Compete worldwide! Requires authentication via Google to save your high scores securely.</div>
+      </p>
+      <button id="closeScoringBtn" class="btn">CLOSE</button>
     </dialog>
 
     <dialog id="pause-menu" class="menu-container">
@@ -148,6 +171,7 @@
       <div class="btn-group">
         <button id="resumeBtn" class="btn">RESUME</button>
         <button id="resetBtn" class="btn secondary">RESET LEVEL</button>
+        <button id="pauseHelpBtn" class="btn secondary">HELP</button>
         <button id="pauseFullscreenBtn" class="btn secondary">TOGGLE FULLSCREEN</button>
         <button id="exitBtn" class="btn secondary">MAIN MENU</button>
       </div>

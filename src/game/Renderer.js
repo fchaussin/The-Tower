@@ -173,17 +173,5 @@ export class Renderer {
       this.ctx.lineTo(this.game.soundBox.x + 25, this.game.soundBox.y + 25);
       this.ctx.stroke();
     }
-
-    // Help Box
-    this.ctx.strokeStyle = '#fff';
-    this.ctx.lineWidth = 1;
-    this.ctx.strokeRect(this.game.helpBox.x, this.game.helpBox.y, this.game.helpBox.w, this.game.helpBox.h);
-    this.ctx.fillStyle = '#fff';
-    this.ctx.font = '20px monospace';
-    this.ctx.textAlign = 'center';
-    this.ctx.textBaseline = 'middle';
-    this.ctx.fillText('?', this.game.helpBox.x + this.game.helpBox.w / 2, this.game.helpBox.y + this.game.helpBox.h / 2);
-    this.ctx.textBaseline = 'alphabetic';
-    this.ctx.textAlign = 'left';
   }
 }

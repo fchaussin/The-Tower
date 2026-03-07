@@ -67,10 +67,15 @@ export class UIManager {
   }
 
   showModal(modalName) {
+    this.help.stopAnimationLoop();
     this.modalManager.showModal(modalName);
+    if (modalName === 'towerFeatures') {
+      this.help.startAnimationLoop();
+    }
   }
 
   closeAllModals() {
+    this.help.stopAnimationLoop();
     this.modalManager.closeAllModals();
   }
 
@@ -174,18 +179,18 @@ export class UIManager {
     });
 
     this.setupButton('helpBtn', () => {
-      this.showModal('help');
+      this.showModal('helpMenu');
     });
 
-    document.addEventListener('fullscreenchange', () => {
-      const modalName = this.modalManager.currentModal;
-      if (modalName) {
-        // Re-open the modal to ensure it's in the top layer of the current fullscreen state
-        this.modalManager.showModal(modalName);
-      }
+    this.setupButton('openTowerFeaturesBtn', () => {
+      this.showModal('towerFeatures');
     });
 
-    this.setupButton('closeHelpBtn', () => {
+    this.setupButton('openScoringBtn', () => {
+      this.showModal('scoring');
+    });
+
+    this.setupButton('closeHelpMenuBtn', () => {
       if (this.game.state === GAME_STATES.MENU) {
         this.showModal('mainMenu');
       } else if (this.game.state === GAME_STATES.PAUSED) {
@@ -193,6 +198,14 @@ export class UIManager {
       } else {
         this.closeAllModals();
       }
+    });
+
+    this.setupButton('closeTowerFeaturesBtn', () => {
+      this.showModal('helpMenu');
+    });
+
+    this.setupButton('closeScoringBtn', () => {
+      this.showModal('helpMenu');
     });
 
     // Pause menu buttons
@@ -203,6 +216,10 @@ export class UIManager {
     this.setupButton('resetBtn', () => {
       this.game.reset();
       this.game.updateState(GAME_STATES.PLAYING);
+    });
+
+    this.setupButton('pauseHelpBtn', () => {
+      this.showModal('helpMenu');
     });
 
     this.setupButton('pauseFullscreenBtn', () => {
@@ -276,7 +293,7 @@ export class UIManager {
               this.showModal('pause');
             });
           }, 10);
-        } else if (currentModal === 'help') {
+        } else if (['helpMenu', 'towerFeatures', 'scoring'].includes(currentModal)) {
           if (state === GAME_STATES.MENU) {
             this.showModal('mainMenu');
           } else if (state === GAME_STATES.PAUSED) {

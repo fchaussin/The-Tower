@@ -106,7 +106,6 @@ export class Game {
     }
     this.pauseBox = { x: this.width - 50, y: 20, w: 30, h: 30 };
     this.soundBox = { x: this.width - 90, y: 20, w: 30, h: 30 };
-    this.helpBox = { x: this.width - 130, y: 20, w: 30, h: 30 };
     if (this.upgrades) {
       let maxBoxSize = 50;
       let gap = 10;
@@ -324,11 +323,6 @@ export class Game {
       if (x >= this.pauseBox.x && x <= this.pauseBox.x + this.pauseBox.w &&
           y >= this.pauseBox.y && y <= this.pauseBox.y + this.pauseBox.h) {
         this.updateState(GAME_STATES.PAUSED);
-        return;
-      }
-      if (x >= this.helpBox.x && x <= this.helpBox.x + this.helpBox.w &&
-          y >= this.helpBox.y && y <= this.helpBox.y + this.helpBox.h) {
-        this.updateState(GAME_STATES.PAUSED, { showHelp: true });
         return;
       }
 

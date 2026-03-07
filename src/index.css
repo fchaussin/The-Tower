@@ -71,6 +71,8 @@ canvas#gameCanvas {
   text-align: center;
   color: var(--text-main);
   min-width: 18.75rem;
+  max-width: 500px;
+  width: 90vw;
   box-shadow: 0 0 1.25rem rgb(from var(--bg-color) r g b / 0.8);
   font-family: var(--font-mono);
   overflow-y: auto;
@@ -447,18 +449,16 @@ canvas#gameCanvas {
   width: 100%;
 }
 
-.help-item {
-  margin-bottom: 0.9375rem;
+.scoring-item {
   display: flex;
   align-items: center;
-  gap: 0.625rem;
+  gap: 10px;
+  text-align: left;
+  margin-bottom: 1rem;
 }
 
-.help-item canvas {
-  position: unset;
-  height: 30px;
-  width: auto;
-  aspect-ratio: 1;
+.scoring-item svg {
+  flex-shrink: 0;
 }
 
 .leaderboard {
