@@ -6,7 +6,7 @@ export class Tower extends Entity {
     super(x, y);
     this.radius = 20;
     this.damage = 2;
-    this.range = 200;
+    this.range = 150;
     this.cooldown = 400;
     this.projectileSpeed = 400;
     this.lastFireTime = 0;
@@ -43,7 +43,7 @@ export class Tower extends Entity {
       }
     }
   }
-  draw(ctx, game) {
+  drawBackground(ctx, game) {
     // Base range background
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.range, 0, Math.PI * 2);
@@ -76,7 +76,9 @@ export class Tower extends Entity {
       ctx.lineWidth = 1;
       ctx.stroke();
     }
-    
+  }
+
+  drawForeground(ctx, game) {
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
     ctx.fillStyle = '#fff';

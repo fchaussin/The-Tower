@@ -2,21 +2,29 @@ import { Tower } from './Tower.js';
 import { getLevelConfig, DIFFICULTY_LEVELS } from './Levels.js';
 import { Shockwave } from './Shockwave.js';
 import { TextEffect } from './TextEffect.js';
-import { ChainEffect } from './ChainEffect.js';
+import { LightningEffect } from './LightningEffect.js';
+import { SplashEffect } from './SplashEffect.js';
 import { DamageFeature } from './features/DamageFeature.js';
 import { RangeFeature } from './features/RangeFeature.js';
 import { CooldownFeature } from './features/CooldownFeature.js';
 import { SpeedFeature } from './features/SpeedFeature.js';
 import { SplashFeature } from './features/SplashFeature.js';
-import { ChainFeature } from './features/ChainFeature.js';
+import { LightningFeature } from './features/LightningFeature.js';
 import { PoisonFeature } from './features/PoisonFeature.js';
 import { SlowFeature } from './features/SlowFeature.js';
 import { AudioManager } from './AudioManager.js';
 import { UIManager } from './UIManager.js';
 import { Renderer } from './Renderer.js';
 import { NotificationManager } from './NotificationManager.js';
-import { GAME_STATES } from './GameStates.js';
 import { Simulator } from './Simulator.js';
+
+export const GAME_STATES = {
+  MENU: 'MENU',
+  PLAYING: 'PLAYING',
+  PAUSED: 'PAUSED',
+  GAME_OVER: 'GAME_OVER',
+  LIFE_LOST: 'LIFE_LOST'
+};
 
 export class Game {
   constructor(canvas) {
@@ -126,7 +134,8 @@ export class Game {
     this.projectiles = [];
     this.shockwaves = [];
     this.textEffects = [];
-    this.chainEffects = [];
+    this.lightningEffects = [];
+    this.splashEffects = [];
     this.flashes = [];
     this.currency = 0;
     this.score = 0;
@@ -148,7 +157,7 @@ export class Game {
       new SpeedFeature(),
       new RangeFeature(),
       new SplashFeature(),
-      new ChainFeature(),
+      new LightningFeature(),
       new PoisonFeature(),
       new SlowFeature()
     ];
@@ -209,7 +218,8 @@ export class Game {
     this.projectiles = [];
     this.shockwaves = [];
     this.textEffects = [];
-    this.chainEffects = [];
+    this.lightningEffects = [];
+    this.splashEffects = [];
     this.flashes = [];
     
     this.updateState(GAME_STATES.PLAYING);
@@ -228,8 +238,7 @@ export class Game {
         cooldown: this.tower.cooldown,
         projectileSpeed: this.tower.projectileSpeed,
         splashRadius: this.tower.splashRadius || 0,
-        splashDamage: this.tower.splashDamage || 0,
-        chainCount: this.tower.chainCount || 0,
+        lightningCount: this.tower.lightningCount || 0,
         poisonDamage: this.tower.poisonDamage || 0,
         poisonDuration: this.tower.poisonDuration || 0,
         slowIntensity: this.tower.slowIntensity || 0,
@@ -257,8 +266,7 @@ export class Game {
     this.tower.cooldown = snapshot.tower.cooldown;
     this.tower.projectileSpeed = snapshot.tower.projectileSpeed;
     this.tower.splashRadius = snapshot.tower.splashRadius;
-    this.tower.splashDamage = snapshot.tower.splashDamage;
-    this.tower.chainCount = snapshot.tower.chainCount;
+    this.tower.lightningCount = snapshot.tower.lightningCount;
     this.tower.poisonDamage = snapshot.tower.poisonDamage;
     this.tower.poisonDuration = snapshot.tower.poisonDuration;
     this.tower.slowIntensity = snapshot.tower.slowIntensity;
@@ -287,8 +295,12 @@ export class Game {
     this.textEffects.push(new TextEffect(x, y, text, color, size, duration));
   }
 
-  spawnChainEffect(x1, y1, x2, y2, color = '#0ff', duration = 0.2) {
-    this.chainEffects.push(new ChainEffect(x1, y1, x2, y2, color, duration));
+  spawnLightningEffect(x1, y1, x2, y2, color = '#0ff', duration = 0.2) {
+    this.lightningEffects.push(new LightningEffect(x1, y1, x2, y2, color, duration));
+  }
+
+  spawnSplashEffect(x, y, color, radius, duration, intensity = 1.0) {
+    this.splashEffects.push(new SplashEffect(x, y, color, radius, duration, intensity));
   }
 
   handleClick(e) {
@@ -373,14 +385,16 @@ export class Game {
     this.projectiles.forEach(p => p.update(dt, this));
     this.shockwaves.forEach(s => s.update(dt));
     this.textEffects.forEach(t => t.update(dt));
-    this.chainEffects.forEach(c => c.update(dt));
+    this.lightningEffects.forEach(c => c.update(dt));
+    this.splashEffects.forEach(s => s.update(dt));
     this.flashes.forEach(f => f.life -= dt);
     
     this.enemies = this.enemies.filter(e => !e.markedForDeletion);
     this.projectiles = this.projectiles.filter(p => !p.markedForDeletion);
     this.shockwaves = this.shockwaves.filter(s => !s.markedForDeletion);
     this.textEffects = this.textEffects.filter(t => !t.markedForDeletion);
-    this.chainEffects = this.chainEffects.filter(c => !c.markedForDeletion);
+    this.lightningEffects = this.lightningEffects.filter(c => !c.markedForDeletion);
+    this.splashEffects = this.splashEffects.filter(s => !s.markedForDeletion);
     this.flashes = this.flashes.filter(f => f.life > 0);
   }
 

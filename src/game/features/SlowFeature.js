@@ -9,7 +9,16 @@ export class SlowFeature extends TowerFeature {
       baseIntensity: 0.05,
       intensityMultiplier: 1,
       intensityAddition: 0,
-      color: '#4af'
+      color: '#4af',
+      iconDef: {
+        type: 'path',
+        viewBox: [0, 0, 24, 24],
+        paths: ["M3 7L6.5 9M21 17L17.5 15M12 12L6.5 9M12 12L6.5 15M12 12V5M12 12V18.5M12 12L17.5 15M12 12L17.5 9M12 2V5M12 22V18.5M21 7L17.5 9M3 17L6.5 15M6.5 9L3 10M6.5 9L6 5.5M6.5 15L3 14M6.5 15L6 18.5M12 5L9.5 4M12 5L14.5 4M12 18.5L14.5 20M12 18.5L9.5 20M17.5 15L18 18.5M17.5 15L21 14M17.5 9L21 10M17.5 9L18 5.5"],
+        stroke: true,
+        lineWidth: 1.5,
+        lineCap: 'round',
+        lineJoin: 'round'
+      }
     });
   }
 
@@ -18,40 +27,5 @@ export class SlowFeature extends TowerFeature {
     // We cap it at 80% to avoid stopping enemies completely
     tower.slowIntensity = Math.min(0.8, (tower.slowIntensity || 0) + intensity);
     tower.slowDuration = (tower.slowDuration || 0) + 1.0; // +1 second duration per level
-  }
-
-  draw(ctx, x, y, w, h, color) {
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
-    
-    // Draw a snowflake-like icon
-    const cx = x + w / 2;
-    const cy = y + h / 2;
-    const r = 15;
-    
-    for (let i = 0; i < 6; i++) {
-      const angle = (i * Math.PI) / 3;
-      ctx.beginPath();
-      ctx.moveTo(cx, cy);
-      ctx.lineTo(cx + Math.cos(angle) * r, cy + Math.sin(angle) * r);
-      ctx.stroke();
-      
-      // Small branches
-      const bx = cx + Math.cos(angle) * (r * 0.6);
-      const by = cy + Math.sin(angle) * (r * 0.6);
-      const branchAngle1 = angle + Math.PI / 4;
-      const branchAngle2 = angle - Math.PI / 4;
-      const branchLen = 5;
-      
-      ctx.beginPath();
-      ctx.moveTo(bx, by);
-      ctx.lineTo(bx + Math.cos(branchAngle1) * branchLen, by + Math.sin(branchAngle1) * branchLen);
-      ctx.stroke();
-      
-      ctx.beginPath();
-      ctx.moveTo(bx, by);
-      ctx.lineTo(bx + Math.cos(branchAngle2) * branchLen, by + Math.sin(branchAngle2) * branchLen);
-      ctx.stroke();
-    }
   }
 }

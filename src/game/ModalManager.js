@@ -8,6 +8,19 @@ export class ModalManager {
       help: document.getElementById('help-modal'),
       pause: document.getElementById('pause-menu')
     };
+
+    // Prevent closing with ESC
+    Object.values(this.modals).forEach(m => {
+      if (m) {
+        m.addEventListener('cancel', (e) => {
+          e.preventDefault();
+          // On mobile, the back button might trigger 'cancel' on the dialog instead of 'popstate'.
+          // By preventing default, we keep the dialog open.
+          // Then we manually trigger the back navigation so our popstate handler catches it.
+          window.history.back();
+        });
+      }
+    });
   }
 
   showModal(modalName) {

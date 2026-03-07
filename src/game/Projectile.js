@@ -8,9 +8,10 @@ export class Projectile extends Entity {
     this.speed = speed;
     this.tower = tower;
     this.radius = 4;
-    this.chainedTo = new Set([target]); // Keep track of hit enemies to avoid bouncing back
-    this.chainCountRemaining = tower ? (tower.chainCount || 0) : 0;
+    this.lightningTo = new Set([target]); // Keep track of hit enemies to avoid bouncing back
+    this.lightningCountRemaining = tower ? (tower.lightningCount || 0) : 0;
     this.hitIndex = 0;
+    this.chainDelay = 0;
     
     let dx = target.x - x;
     let dy = target.y - y;
@@ -19,6 +20,42 @@ export class Projectile extends Entity {
     this.vy = dist > 0 ? (dy / dist) * this.speed : 0;
   }
   update(dt, game) {
+    if (this.chainDelay > 0) {
+      this.chainDelay -= dt;
+      if (this.chainDelay <= 0) {
+        // Delay finished, spawn lightning and move to next target
+        if (this.nextTarget && !this.nextTarget.markedForDeletion) {
+          if (game.spawnLightningEffect) {
+            const lightningFeature = game.upgrades.find(u => u.id === 'lightning');
+            const color = lightningFeature ? lightningFeature.color : '#0ff';
+            game.spawnLightningEffect(this.x, this.y, this.nextTarget.x, this.nextTarget.y, color, 0.2);
+          }
+          this.target = this.nextTarget;
+          this.lightningTo.add(this.nextTarget);
+          this.lightningCountRemaining--;
+          this.hitIndex++;
+          this.nextTarget = null;
+          
+          // Recalculate velocity
+          let dx = this.target.x - this.x;
+          let dy = this.target.y - this.y;
+          let dist = Math.hypot(dx, dy);
+          this.vx = dist > 0 ? (dx / dist) * this.speed : 0;
+          this.vy = dist > 0 ? (dy / dist) * this.speed : 0;
+        } else {
+          // Target died during delay, try to find another one
+          let newTarget = this.findLightningTarget(game);
+          if (newTarget) {
+            this.nextTarget = newTarget;
+            // Don't reset delay, just process it next frame
+          } else {
+            this.markedForDeletion = true;
+          }
+        }
+      }
+      return;
+    }
+
     if (!this.target.markedForDeletion) {
       let dx = this.target.x - this.x;
       let dy = this.target.y - this.y;
@@ -26,22 +63,17 @@ export class Projectile extends Entity {
       if (dist < this.speed * dt) {
         this.applyDamageAndEffects(this.target, game);
         
-        // Handle Chain
-        if (this.chainCountRemaining > 0) {
-          let nextTarget = this.findChainTarget(game);
+        // Handle Lightning
+        if (this.lightningCountRemaining > 0) {
+          let nextTarget = this.findLightningTarget(game);
           if (nextTarget) {
-            if (game.spawnChainEffect) {
-              const chainFeature = game.upgrades.find(u => u.id === 'chain');
-              const color = chainFeature ? chainFeature.color : '#0ff';
-              game.spawnChainEffect(this.target.x, this.target.y, nextTarget.x, nextTarget.y, color, 0.2);
-            }
-            this.target = nextTarget;
-            this.chainedTo.add(nextTarget);
-            this.chainCountRemaining--;
-            this.hitIndex++;
-            this.x = this.target.x; // Snap to target before bouncing
+            this.x = this.target.x; // Snap to target
             this.y = this.target.y;
-            return; // Continue flying to next target
+            this.nextTarget = nextTarget;
+            // Delay proportional to remaining intensity (Math.pow(0.5, this.hitIndex))
+            // e.g., 0.1s for first bounce, 0.05s for second, etc.
+            this.chainDelay = 0.15 * Math.pow(0.5, this.hitIndex);
+            return; // Wait for delay
           }
         }
         
@@ -65,21 +97,14 @@ export class Projectile extends Entity {
           if (dx * dx + dy * dy < rSum * rSum) {
             this.applyDamageAndEffects(e, game);
             
-            // Handle Chain
-            if (this.chainCountRemaining > 0) {
-              let nextTarget = this.findChainTarget(game);
+            // Handle Lightning
+            if (this.lightningCountRemaining > 0) {
+              let nextTarget = this.findLightningTarget(game);
               if (nextTarget) {
-                if (game.spawnChainEffect) {
-                  const chainFeature = game.upgrades.find(u => u.id === 'chain');
-                  const color = chainFeature ? chainFeature.color : '#0ff';
-                  game.spawnChainEffect(e.x, e.y, nextTarget.x, nextTarget.y, color, 0.2);
-                }
-                this.target = nextTarget;
-                this.chainedTo.add(nextTarget);
-                this.chainCountRemaining--;
-                this.hitIndex++;
                 this.x = e.x;
                 this.y = e.y;
+                this.nextTarget = nextTarget;
+                this.chainDelay = 0.15 * Math.pow(0.5, this.hitIndex);
                 return;
               }
             }
@@ -101,30 +126,31 @@ export class Projectile extends Entity {
   }
   
   applyDamageAndEffects(target, game) {
-    // Chain damage falloff: 100%, 60%, 36%, 21%...
-    let currentDamage = this.damage * Math.pow(0.6, this.hitIndex);
+    // Lightning damage falloff: 100%, 50%, 25%, 12.5%...
+    let currentDamage = this.damage * Math.pow(0.5, this.hitIndex);
     target.health -= currentDamage;
     game.audioManager.playSound('hit');
     
     // Splash Damage
     if (this.tower && this.tower.splashRadius > 0) {
-      // Splash damage also follows chain falloff if it's a chain hit
-      let baseSplashDamage = this.tower.splashDamage * Math.pow(0.6, this.hitIndex);
+      // Splash damage uses the current projectile damage
+      let baseSplashDamage = currentDamage;
       
       for (let e of game.enemies) {
         if (e !== target && !e.markedForDeletion) {
           let dist = Math.hypot(e.x - target.x, e.y - target.y);
           if (dist <= this.tower.splashRadius) {
-            // Splash falloff: linear from center to edge
-            let falloff = 1 - (dist / this.tower.splashRadius);
+            // Splash falloff: 50% at the edge
+            let falloff = 1 - 0.5 * (dist / this.tower.splashRadius);
             e.health -= baseSplashDamage * falloff;
           }
         }
       }
-      if (game.spawnShockwave) {
+      if (game.spawnSplashEffect) {
         const splashFeature = game.upgrades.find(u => u.id === 'splash');
         const color = splashFeature ? splashFeature.color : '#f80';
-        game.spawnShockwave(target.x, target.y, color, this.tower.splashRadius, 1.0, null, 3, true);
+        const remainingIntensity = Math.pow(0.5, this.hitIndex);
+        game.spawnSplashEffect(target.x, target.y, color, this.tower.splashRadius, 1.0, remainingIntensity);
       }
     } else {
       if (game.spawnShockwave) {
@@ -162,15 +188,15 @@ export class Projectile extends Entity {
     }
   }
   
-  findChainTarget(game) {
+  findLightningTarget(game) {
     let bestTarget = null;
     let minDst = Infinity;
-    let chainRange = this.tower.chainRange || 100;
+    let lightningRange = this.tower.lightningRange || 100;
     
     for (let e of game.enemies) {
-      if (!this.chainedTo.has(e) && !e.markedForDeletion) {
+      if (!this.lightningTo.has(e) && !e.markedForDeletion) {
         let dist = Math.hypot(e.x - this.x, e.y - this.y);
-        if (dist <= chainRange && dist < minDst) {
+        if (dist <= lightningRange && dist < minDst) {
           minDst = dist;
           bestTarget = e;
         }

@@ -14,10 +14,7 @@
   /* Inline CSS for immediate splash screen rendering */
   #splash-screen {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     background-color: #111;
     display: flex;
     flex-direction: column;
@@ -29,18 +26,18 @@
     transition: opacity 0.5s ease;
   }
   .spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid rgba(255, 255, 255, 0.1);
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 0.25rem solid rgba(255, 255, 255, 0.1);
     border-top-color: #0df;
     border-radius: 50%;
     animation: spin 1s linear infinite;
-    margin-bottom: 20px;
+    margin-bottom: 1.25rem;
   }
   .spinner-small {
-    width: 20px;
-    height: 20px;
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 0.125rem solid rgba(255, 255, 255, 0.1);
     border-top-color: #0df;
     border-radius: 50%;
     animation: spin 1s linear infinite;
@@ -49,10 +46,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    padding: 20px 0;
+    gap: 0.625rem;
+    padding: 1.25rem 0;
     color: #888;
-    font-size: 14px;
+    font-size: 0.875rem;
   }
   @keyframes spin {
     to { transform: rotate(360deg); }
@@ -70,9 +67,12 @@
     <dialog id="main-menu" class="menu-container">
       <h1>Idle Tower Defense</h1>
       
-      <div id="auth-section" class="hidden" style="display: flex; flex-direction: column; gap: 10px;">
-        <div id="userInfo" style="color: #0df;">Let's authenticate for global topscores !</div>
-        <button id="loginBtn" class="btn" style="background: #4285F4; border-color: #4285F4; font-size: 14px;">LOGIN WITH GOOGLE</button>
+      <div id="auth-section" class="hidden auth-section">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+          <div id="userInfo" class="text-info">Let's authenticate for global topscores !</div>
+          <a href="#" id="logoutBtn" class="hidden text-danger text-sm" style="text-decoration: underline; cursor: pointer;">Logout</a>
+        </div>
+        <button id="loginBtn" class="btn btn-google"><img src="https://www.gstatic.com/images/branding/searchlogo/ico/favicon.ico"/> LOGIN WITH GOOGLE</button>
       </div>
 
       <div class="input-group">
@@ -81,20 +81,20 @@
       </div>
       <div class="input-group">
         <label for="difficultySelect">Difficulty:</label>
-        <select id="difficultySelect" style="width: 100%; background: #222; color: #fff; border: 1px solid #444; padding: 10px; border-radius: 4px; font-family: monospace; cursor: pointer;">
+        <select id="difficultySelect">
           <option value="EASY">Easy (Relaxed)</option>
           <option value="MEDIUM" selected>Medium (Standard)</option>
           <option value="HARD">Hard (Challenge)</option>
         </select>
       </div>
-      <div class="flex flex-col sm:flex-row gap-2 sm:gap-[10px]">
-        <button id="startBtn" class="btn" style="flex: 1;">START GAME</button>
-        <div class="flex gap-2 sm:gap-[10px] justify-center">
-          <button id="helpBtn" class="btn" style="width: 50px; padding: 10px;">?</button>
-          <button id="menuSoundBtn" class="btn" style="width: 50px; padding: 10px; color: #f00; border-color: #f00;">🔇</button>
+      <div class="btn-group-row">
+        <button id="startBtn" class="btn flex-1">START GAME</button>
+        <div class="icon-btns">
+          <button id="helpBtn" class="btn btn-icon">?</button>
+          <button id="menuSoundBtn" class="btn btn-icon text-danger" style="border-color: var(--accent-danger);">🔇</button>
         </div>
       </div>
-      <button id="fullscreenBtn" class="btn secondary" style="font-size: 14px;">
+      <button id="fullscreenBtn" class="btn secondary text-sm">
         ENTER FULL SCREEN
       </button>
       
@@ -112,64 +112,40 @@
       <h1>GAME OVER</h1>
       <p id="finalScore">Score: 0</p>
       <p id="finalLevel">Level: 1</p>
-      <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+      <div class="btn-group">
         <button id="restartBtn" class="btn">PLAY AGAIN</button>
         <button id="mainMenuBtn" class="btn secondary">MAIN MENU</button>
       </div>
     </dialog>
 
     <dialog id="life-lost-menu" class="menu-container">
-      <h1 style="color: #f44;">LIFE LOST</h1>
+      <h1 class="text-danger">LIFE LOST</h1>
       <p>An enemy reached the tower!</p>
-      <p style="font-size: 14px; color: #f88;">Penalty: Progress since level start is lost</p>
-      <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
-        <button id="retryLevelBtn" class="btn" style="background: #f44;">RETRY LEVEL</button>
+      <p class="text-danger-light">Penalty: Progress since level start is lost</p>
+      <div class="btn-group">
+        <button id="retryLevelBtn" class="btn btn-danger">RETRY LEVEL</button>
         <button id="mainMenuFromLifeLostBtn" class="btn secondary">MAIN MENU</button>
       </div>
     </dialog>
 
-    <dialog id="help-modal" class="menu-container">
+    <dialog id="help-modal" class="menu-container help-carousel-modal">
       <h1>Tower Upgrades</h1>
-      <div style="text-align: left; font-size: 14px; line-height: 1.5; width: 100%;">
-        <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-          <canvas id="icon-damage" width="30" height="30"></canvas>
-          <div><strong>Damage:</strong> Increases the damage dealt by each projectile.</div>
+      <div class="carousel-container">
+        <button id="prevHelpBtn" class="carousel-btn">&lt;</button>
+        <div class="carousel-track-container">
+          <ul class="carousel-track" id="helpCarouselTrack">
+            <!-- Items injected by JS -->
+          </ul>
         </div>
-        <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-          <canvas id="icon-cooldown" width="30" height="30"></canvas>
-          <div><strong>Cooldown:</strong> Reduces the time between shots.</div>
-        </div>
-        <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-          <canvas id="icon-speed" width="30" height="30"></canvas>
-          <div><strong>Speed:</strong> Increases the firing speed of projectiles.</div>
-        </div>
-        <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-          <canvas id="icon-range" width="30" height="30"></canvas>
-          <div><strong>Range:</strong> Increases the targeting radius of the tower.</div>
-        </div>
-        <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-          <canvas id="icon-splash" width="30" height="30"></canvas>
-          <div><strong>Splash:</strong> Projectiles deal area-of-effect damage on impact.</div>
-        </div>
-        <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-          <canvas id="icon-chain" width="30" height="30"></canvas>
-          <div><strong>Chain:</strong> Projectiles bounce to additional nearby enemies.</div>
-        </div>
-        <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-          <canvas id="icon-poison" width="30" height="30"></canvas>
-          <div><strong>Poison:</strong> Applies damage over time to enemies hit.</div>
-        </div>
-        <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-          <canvas id="icon-slow" width="30" height="30"></canvas>
-          <div><strong>Slow:</strong> Reduces enemy movement speed for a duration.</div>
-        </div>
+        <button id="nextHelpBtn" class="carousel-btn">&gt;</button>
       </div>
+      <div class="carousel-indicators" id="helpCarouselIndicators"></div>
       <button id="closeHelpBtn" class="btn">CLOSE</button>
     </dialog>
 
     <dialog id="pause-menu" class="menu-container">
       <h1>PAUSED</h1>
-      <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+      <div class="btn-group">
         <button id="resumeBtn" class="btn">RESUME</button>
         <button id="resetBtn" class="btn secondary">RESET LEVEL</button>
         <button id="pauseFullscreenBtn" class="btn secondary">TOGGLE FULLSCREEN</button>

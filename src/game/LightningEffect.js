@@ -1,4 +1,4 @@
-export class ChainEffect {
+export class LightningEffect {
   constructor(x1, y1, x2, y2, color = '#0ff', duration = 0.2) {
     this.x1 = x1;
     this.y1 = y1;

@@ -1,7 +1,0 @@
-export const GAME_STATES = {
-  MENU: 'MENU',
-  PLAYING: 'PLAYING',
-  PAUSED: 'PAUSED',
-  GAME_OVER: 'GAME_OVER',
-  LIFE_LOST: 'LIFE_LOST'
-};

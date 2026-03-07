@@ -1,4 +1,5 @@
-import { GAME_STATES } from './GameStates.js';
+import { GAME_STATES } from './Game.js';
+import { IconRenderer } from './IconRenderer.js';
 
 export class Renderer {
   constructor(game, ctx) {
@@ -16,11 +17,15 @@ export class Renderer {
     if (this.game.state === GAME_STATES.PLAYING || this.game.state === GAME_STATES.PAUSED || this.game.state === GAME_STATES.GAME_OVER || this.game.state === GAME_STATES.LIFE_LOST) {
       this.drawFlashes();
       
-      this.game.tower.draw(this.ctx, this.game);
+      this.game.tower.drawBackground(this.ctx, this.game);
       this.game.enemies.forEach(e => e.draw(this.ctx));
       this.game.projectiles.forEach(p => p.draw(this.ctx));
-      this.game.chainEffects.forEach(c => c.draw(this.ctx));
+      this.game.lightningEffects.forEach(c => c.draw(this.ctx));
+      this.game.splashEffects.forEach(s => s.draw(this.ctx));
       this.game.shockwaves.forEach(s => s.draw(this.ctx));
+      
+      this.game.tower.drawForeground(this.ctx, this.game);
+      
       this.game.textEffects.forEach(t => t.draw(this.ctx));
       
       this.drawHUD();
@@ -101,7 +106,7 @@ export class Renderer {
       this.ctx.strokeStyle = color;
       this.ctx.lineWidth = 2;
       this.ctx.strokeRect(upg.box.x, upg.box.y, upg.box.w, upg.box.h);
-      upg.draw(this.ctx, upg.box.x, upg.box.y, upg.box.w, upg.box.h, color);
+      IconRenderer.drawIcon(this.ctx, upg, upg.box.x, upg.box.y, upg.box.w, upg.box.h, color);
       this.ctx.fillStyle = color;
       let fontSize = Math.max(10, Math.floor(upg.box.w * 0.28));
       this.ctx.font = `${fontSize}px monospace`;

@@ -133,7 +133,7 @@ export class LeaderboardManager {
             range: Number(this.game.tower.range),
             projectileSpeed: Number(this.game.tower.projectileSpeed),
             splashRadius: Number(this.game.tower.splashRadius),
-            chainCount: Number(this.game.tower.chainCount),
+            lightningCount: Number(this.game.tower.lightningCount),
             poisonDamage: Number(this.game.tower.poisonDamage)
           }
         });

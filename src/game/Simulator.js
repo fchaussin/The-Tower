@@ -22,7 +22,7 @@ export class Simulator {
     const maxLoops = 1000000; // Prevent infinite loops (approx 4.5 hours of virtual time)
 
     // Priority list for auto-buying upgrades
-    const priorities = ['damage', 'cooldown', 'splash', 'speed', 'chain', 'range', 'poison', 'slow'];
+    const priorities = ['damage', 'cooldown', 'splash', 'speed', 'lightning', 'range', 'poison', 'slow'];
 
     while (game.lives > 0 && game.level <= targetLevel && loops < maxLoops) {
       game.update(timeStep);

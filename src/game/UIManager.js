@@ -1,8 +1,8 @@
-import { auth, provider, signInWithPopup, onAuthStateChanged, isFirebaseEnabled } from '../services/firebase.js';
-import { IconRenderer } from './IconRenderer.js';
+import { auth, provider, signInWithPopup, onAuthStateChanged, signOut, isFirebaseEnabled } from '../services/firebase.js';
+import { Help } from './Help.js';
 import { LeaderboardManager } from './LeaderboardManager.js';
 import { ModalManager } from './ModalManager.js';
-import { GAME_STATES } from './GameStates.js';
+import { GAME_STATES } from './Game.js';
 
 const DEFAULT_USERNAME = 'Anonymous';
 
@@ -13,12 +13,14 @@ export class UIManager {
     this.formatter = new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 });
 
     this.modalManager = new ModalManager();
+    this.help = new Help();
     this.playerNameInput = document.getElementById('playerName');
     this.difficultySelect = document.getElementById('difficultySelect');
     
     this.leaderboardManager = new LeaderboardManager(this.game, this);
 
     this.loginBtn = document.getElementById('loginBtn');
+    this.logoutBtn = document.getElementById('logoutBtn');
     this.userInfo = document.getElementById('userInfo');
     this.authSection = document.getElementById('auth-section');
 
@@ -40,6 +42,16 @@ export class UIManager {
 
   closeAllModals() {
     this.modalManager.closeAllModals();
+  }
+
+  setupButton(id, onClick) {
+    const btn = document.getElementById(id);
+    if (btn) {
+      btn.addEventListener('click', onClick);
+    } else {
+      console.warn(`${id} not found`);
+    }
+    return btn;
   }
 
   setup() {
@@ -65,6 +77,7 @@ export class UIManager {
       onAuthStateChanged(auth, (user) => {
         if (user) {
           if (this.loginBtn) this.loginBtn.classList.add('hidden');
+          if (this.logoutBtn) this.logoutBtn.classList.remove('hidden');
           if (this.userInfo) {
             this.userInfo.innerText = `Logged in as: ${user.displayName}`;
           }
@@ -77,6 +90,10 @@ export class UIManager {
           }
         } else {
           if (this.loginBtn) this.loginBtn.classList.remove('hidden');
+          if (this.logoutBtn) this.logoutBtn.classList.add('hidden');
+          if (this.userInfo) {
+            this.userInfo.innerText = `Let's authenticate for global topscores !`;
+          }
         }
       });
 
@@ -89,54 +106,46 @@ export class UIManager {
           }
         });
       }
+
+      if (this.logoutBtn) {
+        this.logoutBtn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          try {
+            await signOut(auth);
+          } catch (error) {
+            console.error("Logout failed", error);
+          }
+        });
+      }
     }
 
-    const startBtn = document.getElementById('startBtn');
-    if (startBtn) {
-      startBtn.addEventListener('click', () => {
-        this.game.audioManager.init();
-        this.game.notificationManager.requestPermission();
-        this.game.reset();
-        this.game.updateState(GAME_STATES.PLAYING);
-      });
-    } else console.warn('startBtn not found');
+    this.setupButton('startBtn', () => {
+      this.game.audioManager.init();
+      this.game.notificationManager.requestPermission();
+      this.game.reset();
+      this.game.updateState(GAME_STATES.PLAYING);
+    });
 
-    const restartBtn = document.getElementById('restartBtn');
-    if (restartBtn) {
-      restartBtn.addEventListener('click', () => {
-        this.game.reset();
-        this.game.updateState(GAME_STATES.PLAYING);
-      });
-    } else console.warn('restartBtn not found');
+    this.setupButton('restartBtn', () => {
+      this.game.reset();
+      this.game.updateState(GAME_STATES.PLAYING);
+    });
 
-    const mainMenuBtn = document.getElementById('mainMenuBtn');
-    if (mainMenuBtn) {
-      mainMenuBtn.addEventListener('click', () => {
-        this.game.updateState(GAME_STATES.MENU);
-      });
-    } else console.warn('mainMenuBtn not found');
+    this.setupButton('mainMenuBtn', () => {
+      this.game.updateState(GAME_STATES.MENU);
+    });
 
-    const retryLevelBtn = document.getElementById('retryLevelBtn');
-    if (retryLevelBtn) {
-      retryLevelBtn.addEventListener('click', () => {
-        this.game.retryLevel();
-      });
-    }
+    this.setupButton('retryLevelBtn', () => {
+      this.game.retryLevel();
+    });
 
-    const mainMenuFromLifeLostBtn = document.getElementById('mainMenuFromLifeLostBtn');
-    if (mainMenuFromLifeLostBtn) {
-      mainMenuFromLifeLostBtn.addEventListener('click', () => {
-        this.game.updateState(GAME_STATES.MENU);
-      });
-    }
+    this.setupButton('mainMenuFromLifeLostBtn', () => {
+      this.game.updateState(GAME_STATES.MENU);
+    });
 
-    const helpModal = document.getElementById('help-modal');
-    const helpBtn = document.getElementById('helpBtn');
-    if (helpBtn) {
-      helpBtn.addEventListener('click', () => {
-        this.showModal('help');
-      });
-    } else console.warn('helpBtn not found');
+    this.setupButton('helpBtn', () => {
+      this.showModal('help');
+    });
 
     document.addEventListener('fullscreenchange', () => {
       const modalName = this.modalManager.currentModal;
@@ -146,85 +155,104 @@ export class UIManager {
       }
     });
 
-    const closeHelpBtn = document.getElementById('closeHelpBtn');
-    if (closeHelpBtn) {
-      closeHelpBtn.addEventListener('click', () => {
-        if (this.game.state === GAME_STATES.MENU) {
-          this.showModal('mainMenu');
-        } else if (this.game.state === GAME_STATES.PAUSED) {
-          this.showModal('pause');
-        } else {
-          this.closeAllModals();
-        }
-      });
-    } else console.warn('closeHelpBtn not found');
+    this.setupButton('closeHelpBtn', () => {
+      if (this.game.state === GAME_STATES.MENU) {
+        this.showModal('mainMenu');
+      } else if (this.game.state === GAME_STATES.PAUSED) {
+        this.showModal('pause');
+      } else {
+        this.closeAllModals();
+      }
+    });
 
     // Pause menu buttons
-    const resumeBtn = document.getElementById('resumeBtn');
-    if (resumeBtn) {
-      resumeBtn.addEventListener('click', () => {
-        this.game.updateState(GAME_STATES.PLAYING);
-      });
-    }
+    this.setupButton('resumeBtn', () => {
+      this.game.updateState(GAME_STATES.PLAYING);
+    });
 
-    const resetBtn = document.getElementById('resetBtn');
-    if (resetBtn) {
-      resetBtn.addEventListener('click', () => {
-        this.game.reset();
-        this.game.updateState(GAME_STATES.PLAYING);
-      });
-    }
+    this.setupButton('resetBtn', () => {
+      this.game.reset();
+      this.game.updateState(GAME_STATES.PLAYING);
+    });
 
-    const pauseFullscreenBtn = document.getElementById('pauseFullscreenBtn');
-    if (pauseFullscreenBtn) {
-      pauseFullscreenBtn.addEventListener('click', () => {
-        this.toggleFullscreen();
-      });
-    }
+    this.setupButton('pauseFullscreenBtn', () => {
+      this.toggleFullscreen();
+    });
 
-    const exitBtn = document.getElementById('exitBtn');
-    if (exitBtn) {
-      exitBtn.addEventListener('click', () => {
-        this.game.updateState(GAME_STATES.MENU);
-      });
-    }
+    this.setupButton('exitBtn', () => {
+      this.game.updateState(GAME_STATES.MENU);
+    });
 
-    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    const fullscreenBtn = this.setupButton('fullscreenBtn', () => {
+      this.toggleFullscreen();
+    });
+    
     if (fullscreenBtn) {
-      fullscreenBtn.addEventListener('click', () => {
-        this.toggleFullscreen();
-      });
-
       document.addEventListener('fullscreenchange', () => {
-        if (!document.fullscreenElement) {
-          fullscreenBtn.innerText = 'ENTER FULLSCREEN';
-        } else {
-          fullscreenBtn.innerText = 'EXIT FULLSCREEN';
-        }
-      });
-    } else console.warn('fullscreenBtn not found');
-
-    const menuSoundBtn = document.getElementById('menuSoundBtn');
-    if (menuSoundBtn) {
-      menuSoundBtn.addEventListener('click', () => {
-        this.game.audioManager.init();
-        const enabled = this.game.audioManager.toggleSound();
-        if (enabled) {
-          menuSoundBtn.innerText = '🔊';
-          menuSoundBtn.style.color = '#0f0';
-          menuSoundBtn.style.borderColor = '#0f0';
-          this.game.audioManager.playMenuMusic();
-        } else {
-          menuSoundBtn.innerText = '🔇';
-          menuSoundBtn.style.color = '#f00';
-          menuSoundBtn.style.borderColor = '#f00';
-        }
+        fullscreenBtn.innerText = !document.fullscreenElement ? 'ENTER FULLSCREEN' : 'EXIT FULLSCREEN';
       });
     }
 
-    IconRenderer.renderTowerFeatureIcons();
+    this.setupButton('menuSoundBtn', () => {
+      this.game.audioManager.init();
+      const enabled = this.game.audioManager.toggleSound();
+      if (enabled) {
+        this.game.audioManager.playMenuMusic();
+      }
+      this.updateMenuSoundBtn();
+    });
+
+    this.help.init();
     this.updateMenuSoundBtn();
     
+    // Handle browser back button robustly using a hash trap
+    const trapHash = '#game';
+    const pushTrap = () => {
+      if (window.location.hash !== trapHash) {
+        window.history.pushState(null, '', window.location.pathname + window.location.search + trapHash);
+      }
+    };
+    
+    pushTrap();
+
+    this.popstateHandler = (e) => {
+      if (window.location.hash !== trapHash) {
+        pushTrap(); // Re-trap immediately
+
+        const state = this.game.state;
+        const currentModal = this.modalManager.currentModal;
+
+        if (state === GAME_STATES.MENU && currentModal === 'mainMenu') {
+          if (window.confirm("Voulez-vous vraiment quitter le jeu ?")) {
+            window.removeEventListener('popstate', this.popstateHandler);
+            window.history.go(-2);
+          }
+        } else if (state === GAME_STATES.PLAYING) {
+          this.game.updateState(GAME_STATES.PAUSED);
+          setTimeout(() => {
+            if (window.confirm("Voulez-vous revenir au menu principal ?")) {
+              this.game.updateState(GAME_STATES.MENU, { force: true });
+            } else {
+              this.game.updateState(GAME_STATES.PLAYING);
+            }
+          }, 10);
+        } else if (state === GAME_STATES.PAUSED && currentModal === 'pause') {
+          setTimeout(() => {
+            if (window.confirm("Voulez-vous revenir au menu principal ?")) {
+              this.game.updateState(GAME_STATES.MENU, { force: true });
+            }
+          }, 10);
+        } else if (currentModal === 'help') {
+          if (state === GAME_STATES.MENU) {
+            this.showModal('mainMenu');
+          } else if (state === GAME_STATES.PAUSED) {
+            this.showModal('pause');
+          }
+        }
+      }
+    };
+    window.addEventListener('popstate', this.popstateHandler);
+
     // Show main menu initially
     if (this.game.state === GAME_STATES.MENU) {
       this.showModal('mainMenu');
@@ -234,15 +262,10 @@ export class UIManager {
   updateMenuSoundBtn() {
     const menuSoundBtn = document.getElementById('menuSoundBtn');
     if (menuSoundBtn) {
-      if (this.game.audioManager.soundEnabled) {
-        menuSoundBtn.innerText = '🔊';
-        menuSoundBtn.style.color = '#0f0';
-        menuSoundBtn.style.borderColor = '#0f0';
-      } else {
-        menuSoundBtn.innerText = '🔇';
-        menuSoundBtn.style.color = '#f00';
-        menuSoundBtn.style.borderColor = '#f00';
-      }
+      const enabled = this.game.audioManager.soundEnabled;
+      menuSoundBtn.innerText = enabled ? '🎵' : '🙉';
+      menuSoundBtn.style.color = enabled ? '#0f0' : '#f00';
+      menuSoundBtn.style.borderColor = enabled ? '#0f0' : '#f00';
     }
   }
 

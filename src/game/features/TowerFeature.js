@@ -1,3 +1,5 @@
+import { IconRenderer } from '../IconRenderer.js';
+
 export class TowerFeature {
   constructor({
     id,
@@ -6,7 +8,8 @@ export class TowerFeature {
     baseIntensity = 1,
     intensityMultiplier = 1,
     intensityAddition = 0,
-    color = '#fff'
+    color = '#fff',
+    iconDef = null
   }) {
     this.id = id;
     this.color = color;
@@ -19,6 +22,7 @@ export class TowerFeature {
     this.cost = baseCost;
     this.intensity = baseIntensity;
     this.box = { x: 0, y: 0, w: 50, h: 50 };
+    this.iconDef = iconDef;
   }
 
   apply(tower, intensity) {
@@ -40,6 +44,8 @@ export class TowerFeature {
   }
 
   draw(ctx, x, y, w, h, color) {
-    // To be implemented by subclasses
+    if (this.iconDef) {
+      IconRenderer.render(ctx, this.iconDef, x, y, w, h, color);
+    }
   }
 }
