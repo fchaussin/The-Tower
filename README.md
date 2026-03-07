@@ -5,19 +5,19 @@ A minimalist, highly addictive browser-based tower defense game built with HTML5
 ## Features
 
 *   **Infinite Mathematical Scaling:** The game features a true infinite progression system. Enemy health and speed scale exponentially and linearly across levels, ensuring the game remains challenging forever.
-*   **Difficulty Settings:** Choose between **Easy**, **Medium**, and **Hard** modes. Difficulty affects enemy health, speed, count, and currency bonuses.
+*   **Difficulty Settings:** Choose between **Easy**, **Medium**, and **Hard** modes. Difficulty affects enemy health, speed, count, and currency bonuses. The chosen difficulty is recorded on the global leaderboard.
 *   **8 Upgradeable Stats (Exponential Scaling):** Upgrades use an exponential cost and power formula to keep pace with infinite enemy scaling.
     *   **Damage:** Increase the power of your projectiles.
     *   **Cooldown:** Shoot faster (with diminishing returns protection).
     *   **Speed:** Projectiles travel faster.
     *   **Range:** Increase your tower's targeting radius.
     *   **Splash:** Projectiles deal area-of-effect damage on impact (with linear distance falloff and dynamic visual opacity based on remaining intensity).
-    *   **Lightning:** Projectiles bounce between multiple enemies (with damage reduction and a satisfying cascading delay per bounce).
-    *   **Poison:** Apply damage-over-time to enemies.
-    *   **Slow:** Reduce enemy movement speed with ice effects.
+    *   **Lightning:** Projectiles bounce between multiple enemies (with damage reduction, a satisfying cascading delay per bounce, and upgradeable bounce range).
+    *   **Poison:** Apply damage-over-time to enemies (with upgradeable duration and damage).
+    *   **Slow:** Reduce enemy movement speed with ice effects (with upgradeable intensity and duration).
 *   **57 Distinct Enemy Types:** A huge variety of enemies with different shapes, sizes, speeds, and health pools, including swarmers, tanks, splitters, and giant bosses. Enemies are introduced progressively and loop with increased difficulty.
 *   **Headless Simulator Mode:** Built-in developer tool to run the game without rendering (`window.runSimulation(targetLevel)`) to test balancing, auto-buy upgrades, and simulate high-level gameplay in seconds.
-*   **Global Leaderboard:** Compete with players worldwide! Features Google Authentication via Firebase to save your high scores securely.
+*   **Global Leaderboard:** Compete with players worldwide! Features Google Authentication via Firebase to save your high scores securely. The leaderboard now tracks your detailed tower stats, purchased upgrades, and difficulty level to showcase your specific build strategy!
 *   **Responsive Design:** Playable on desktop and mobile devices. The game automatically scales to fit your screen, and enemies spawn precisely outside the visible area.
 *   **Visual & Audio Effects:** Satisfying particle effects, screen shake, screen flashes, and retro-style synthesized sound effects. Includes level indicators on upgrade icons and a real-time wave counter (Wave X/Y) for easy tracking.
 *   **Life & Snapshot System:** You have 3 lives. The game takes a "snapshot" of your tower and currency at the start of each level. If an enemy reaches the tower, you can retry the level, restoring your tower to its exact state at the level's start.

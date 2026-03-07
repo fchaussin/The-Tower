@@ -6,7 +6,8 @@ export class ModalManager {
       gameOver: document.getElementById('game-over-menu'),
       lifeLost: document.getElementById('life-lost-menu'),
       help: document.getElementById('help-modal'),
-      pause: document.getElementById('pause-menu')
+      pause: document.getElementById('pause-menu'),
+      confirm: document.getElementById('confirm-modal')
     };
 
     // Prevent closing with ESC

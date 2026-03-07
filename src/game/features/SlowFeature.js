@@ -13,9 +13,9 @@ export class SlowFeature extends TowerFeature {
       iconDef: {
         type: 'path',
         viewBox: [0, 0, 24, 24],
-        paths: ["M3 7L6.5 9M21 17L17.5 15M12 12L6.5 9M12 12L6.5 15M12 12V5M12 12V18.5M12 12L17.5 15M12 12L17.5 9M12 2V5M12 22V18.5M21 7L17.5 9M3 17L6.5 15M6.5 9L3 10M6.5 9L6 5.5M6.5 15L3 14M6.5 15L6 18.5M12 5L9.5 4M12 5L14.5 4M12 18.5L14.5 20M12 18.5L9.5 20M17.5 15L18 18.5M17.5 15L21 14M17.5 9L21 10M17.5 9L18 5.5"],
+        paths: ["M2 12L22 12M12 2L12 22M20 16L16 12L20 8M4 8L8 12L4 16M16 4L12 8L8 4M8 20L12 16L16 20"],
         stroke: true,
-        lineWidth: 1.5,
+        lineWidth: 2,
         lineCap: 'round',
         lineJoin: 'round'
       }

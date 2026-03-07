@@ -60,7 +60,7 @@ export class Projectile extends Entity {
       let dx = this.target.x - this.x;
       let dy = this.target.y - this.y;
       let dist = Math.hypot(dx, dy);
-      if (dist < this.speed * dt) {
+      if (dist - this.target.radius < this.speed * dt) {
         this.applyDamageAndEffects(this.target, game);
         
         // Handle Lightning
@@ -139,9 +139,10 @@ export class Projectile extends Entity {
       for (let e of game.enemies) {
         if (e !== target && !e.markedForDeletion) {
           let dist = Math.hypot(e.x - target.x, e.y - target.y);
-          if (dist <= this.tower.splashRadius) {
+          let edgeDist = dist - e.radius;
+          if (edgeDist <= this.tower.splashRadius) {
             // Splash falloff: 50% at the edge
-            let falloff = 1 - 0.5 * (dist / this.tower.splashRadius);
+            let falloff = 1 - 0.5 * (Math.max(0, edgeDist) / this.tower.splashRadius);
             e.health -= baseSplashDamage * falloff;
           }
         }
@@ -154,9 +155,10 @@ export class Projectile extends Entity {
       }
     } else {
       if (game.spawnShockwave) {
-        let product = target.radius * this.damage;
-        let maxRadius = target.radius + 10 + (product * 0.5);
-        let maxAmplitude = 2 + (product * 0.1);
+        // Shockwave proportional to enemy's maxHealth (capped) and radius
+        let power = Math.min(100, target.maxHealth);
+        let maxRadius = target.radius + 10 + (power * 0.5);
+        let maxAmplitude = 2 + (power * 0.1);
         game.spawnShockwave(target.x, target.y, target.color, maxRadius, 0.2, target, maxAmplitude);
       }
     }
@@ -178,7 +180,8 @@ export class Projectile extends Entity {
         for (let e of game.enemies) {
           if (e !== target && !e.markedForDeletion) {
             let dist = Math.hypot(e.x - target.x, e.y - target.y);
-            if (dist <= this.tower.splashRadius) {
+            let edgeDist = dist - e.radius;
+            if (edgeDist <= this.tower.splashRadius) {
               e.slowIntensity = this.tower.slowIntensity;
               e.slowDuration = this.tower.slowDuration;
             }
@@ -196,8 +199,9 @@ export class Projectile extends Entity {
     for (let e of game.enemies) {
       if (!this.lightningTo.has(e) && !e.markedForDeletion) {
         let dist = Math.hypot(e.x - this.x, e.y - this.y);
-        if (dist <= lightningRange && dist < minDst) {
-          minDst = dist;
+        let edgeDist = dist - e.radius;
+        if (edgeDist <= lightningRange && edgeDist < minDst) {
+          minDst = edgeDist;
           bestTarget = e;
         }
       }

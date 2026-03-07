@@ -30,8 +30,9 @@ export class Tower extends Entity {
         let dx = e.x - this.x;
         let dy = e.y - this.y;
         let dst = Math.hypot(dx, dy);
-        if (dst < this.range && dst < minDst) {
-          minDst = dst;
+        let edgeDist = dst - e.radius;
+        if (edgeDist <= this.range && edgeDist < minDst) {
+          minDst = edgeDist;
           target = e;
         }
       }

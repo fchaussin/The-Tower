@@ -36,6 +36,36 @@ export class UIManager {
     }
   }
 
+  showConfirm(title, message, onYes, onNo) {
+    const titleEl = document.getElementById('confirmTitle');
+    const messageEl = document.getElementById('confirmMessage');
+    const yesBtn = document.getElementById('confirmYesBtn');
+    const noBtn = document.getElementById('confirmNoBtn');
+
+    if (titleEl) titleEl.innerText = title;
+    if (messageEl) messageEl.innerText = message;
+
+    const cleanup = () => {
+      yesBtn.removeEventListener('click', handleYes);
+      noBtn.removeEventListener('click', handleNo);
+    };
+
+    const handleYes = () => {
+      cleanup();
+      if (onYes) onYes();
+    };
+
+    const handleNo = () => {
+      cleanup();
+      if (onNo) onNo();
+    };
+
+    yesBtn.addEventListener('click', handleYes);
+    noBtn.addEventListener('click', handleNo);
+
+    this.showModal('confirm');
+  }
+
   showModal(modalName) {
     this.modalManager.showModal(modalName);
   }
@@ -223,24 +253,28 @@ export class UIManager {
         const currentModal = this.modalManager.currentModal;
 
         if (state === GAME_STATES.MENU && currentModal === 'mainMenu') {
-          if (window.confirm("Voulez-vous vraiment quitter le jeu ?")) {
+          this.showConfirm("QUIT GAME", "Are you sure you want to quit the game?", () => {
             window.removeEventListener('popstate', this.popstateHandler);
             window.history.go(-2);
-          }
+          }, () => {
+            this.showModal('mainMenu');
+          });
         } else if (state === GAME_STATES.PLAYING) {
           this.game.updateState(GAME_STATES.PAUSED);
           setTimeout(() => {
-            if (window.confirm("Voulez-vous revenir au menu principal ?")) {
+            this.showConfirm("MAIN MENU", "Are you sure you want to return to the main menu?", () => {
               this.game.updateState(GAME_STATES.MENU, { force: true });
-            } else {
+            }, () => {
               this.game.updateState(GAME_STATES.PLAYING);
-            }
+            });
           }, 10);
         } else if (state === GAME_STATES.PAUSED && currentModal === 'pause') {
           setTimeout(() => {
-            if (window.confirm("Voulez-vous revenir au menu principal ?")) {
+            this.showConfirm("MAIN MENU", "Are you sure you want to return to the main menu?", () => {
               this.game.updateState(GAME_STATES.MENU, { force: true });
-            }
+            }, () => {
+              this.showModal('pause');
+            });
           }, 10);
         } else if (currentModal === 'help') {
           if (state === GAME_STATES.MENU) {

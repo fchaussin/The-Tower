@@ -9,13 +9,13 @@ export class IconRenderer {
     
     if (iconDef.type === 'path') {
       const [vx, vy, vw, vh] = iconDef.viewBox;
-      const scaleX = (w * 0.85) / vw;
-      const scaleY = (h * 0.85) / vh;
-      const offsetX = (w - vw * scaleX) / 2;
-      const offsetY = (h - vh * scaleY) / 2;
+      const scale = Math.min((w * 0.85) / vw, (h * 0.85) / vh);
+      const offsetX = (w - vw * scale) / 2;
+      const offsetY = (h - vh * scale) / 2;
       
       ctx.translate(offsetX, offsetY);
-      ctx.scale(scaleX, scaleY);
+      ctx.scale(scale, scale);
+      ctx.translate(-vx, -vy);
       
       iconDef.paths.forEach(p => {
         const path = new Path2D(p);

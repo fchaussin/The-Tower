@@ -105,8 +105,9 @@ export class Enemy extends Entity {
     game.currency += this.getCurrencyValue();
     game.score += this.getScoreValue();
     if (game.spawnShockwave) {
-      let maxRadius = this.radius * 3 + 20;
-      let maxAmplitude = Math.max(4, this.radius * 0.5);
+      let power = Math.min(200, this.maxHealth);
+      let maxRadius = this.radius * 2 + 20 + power;
+      let maxAmplitude = Math.max(4, this.radius * 0.5 + power * 0.05);
       game.spawnShockwave(this.x, this.y, this.color, maxRadius, 0.4, null, maxAmplitude);
     }
     if (game.spawnFlash) {

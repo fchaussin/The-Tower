@@ -239,6 +239,7 @@ export class Game {
         projectileSpeed: this.tower.projectileSpeed,
         splashRadius: this.tower.splashRadius || 0,
         lightningCount: this.tower.lightningCount || 0,
+        lightningRange: this.tower.lightningRange || 0,
         poisonDamage: this.tower.poisonDamage || 0,
         poisonDuration: this.tower.poisonDuration || 0,
         slowIntensity: this.tower.slowIntensity || 0,
@@ -267,6 +268,7 @@ export class Game {
     this.tower.projectileSpeed = snapshot.tower.projectileSpeed;
     this.tower.splashRadius = snapshot.tower.splashRadius;
     this.tower.lightningCount = snapshot.tower.lightningCount;
+    this.tower.lightningRange = snapshot.tower.lightningRange;
     this.tower.poisonDamage = snapshot.tower.poisonDamage;
     this.tower.poisonDuration = snapshot.tower.poisonDuration;
     this.tower.slowIntensity = snapshot.tower.slowIntensity;

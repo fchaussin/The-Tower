@@ -122,20 +122,26 @@ export class LeaderboardManager {
           name: name,
           score: score,
           level: Number(this.game.level),
+          difficulty: String(this.game.difficulty || 'normal'),
           balance: Math.floor(Number(this.game.currency)),
           elapsedTime: Number(this.game.time),
           userId: userId,
           timestamp: ts,
           client_timestamp: clientTimestamp,
           towerStats: {
-            damage: Number(this.game.tower.damage),
-            cooldown: Number(this.game.tower.cooldown),
-            range: Number(this.game.tower.range),
-            projectileSpeed: Number(this.game.tower.projectileSpeed),
-            splashRadius: Number(this.game.tower.splashRadius),
-            lightningCount: Number(this.game.tower.lightningCount),
-            poisonDamage: Number(this.game.tower.poisonDamage)
-          }
+            damage: Number(this.game.tower.damage) || 0,
+            cooldown: Number(this.game.tower.cooldown) || 0,
+            range: Number(this.game.tower.range) || 0,
+            projectileSpeed: Number(this.game.tower.projectileSpeed) || 0,
+            splashRadius: Number(this.game.tower.splashRadius) || 0,
+            lightningCount: Number(this.game.tower.lightningCount) || 0,
+            lightningRange: Number(this.game.tower.lightningRange) || 0,
+            poisonDamage: Number(this.game.tower.poisonDamage) || 0,
+            poisonDuration: Number(this.game.tower.poisonDuration) || 0,
+            slowIntensity: Number(this.game.tower.slowIntensity) || 0,
+            slowDuration: Number(this.game.tower.slowDuration) || 0
+          },
+          upgrades: this.game.upgrades ? this.game.upgrades.map(u => ({ id: u.id, level: u.level })) : []
         });
 
         batch.set(leaderboardRef, {

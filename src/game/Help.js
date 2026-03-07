@@ -17,14 +17,14 @@ import { SplashEffect } from './SplashEffect.js';
 export class Help {
   constructor() {
     this.features = [
-      { id: 'icon-damage', title: 'Damage', desc: 'Increases the damage dealt by each projectile.', feature: new DamageFeature() },
-      { id: 'icon-cooldown', title: 'Cooldown', desc: 'Reduces the time between shots.', feature: new CooldownFeature() },
-      { id: 'icon-speed', title: 'Speed', desc: 'Increases the firing speed of projectiles.', feature: new SpeedFeature() },
-      { id: 'icon-range', title: 'Range', desc: 'Increases the targeting radius of the tower.', feature: new RangeFeature() },
-      { id: 'icon-splash', title: 'Splash', desc: 'Projectiles deal area-of-effect damage on impact.', feature: new SplashFeature() },
-      { id: 'icon-lightning', title: 'Lightning', desc: 'Projectiles bounce to additional nearby enemies.', feature: new LightningFeature() },
-      { id: 'icon-poison', title: 'Poison', desc: 'Applies damage over time to enemies hit.', feature: new PoisonFeature() },
-      { id: 'icon-slow', title: 'Slow', desc: 'Reduces enemy movement speed for a duration.', feature: new SlowFeature() }
+      { id: 'damage', title: 'Damage', desc: 'Increases the damage dealt by each projectile.', feature: new DamageFeature() },
+      { id: 'cooldown', title: 'Cooldown', desc: 'Reduces the time between shots.', feature: new CooldownFeature() },
+      { id: 'speed', title: 'Speed', desc: 'Increases the firing speed of projectiles.', feature: new SpeedFeature() },
+      { id: 'range', title: 'Range', desc: 'Increases the targeting radius of the tower.', feature: new RangeFeature() },
+      { id: 'splash', title: 'Splash', desc: 'Projectiles deal area-of-effect damage on impact.', feature: new SplashFeature() },
+      { id: 'lightning', title: 'Lightning', desc: 'Projectiles bounce to additional nearby enemies.', feature: new LightningFeature() },
+      { id: 'poison', title: 'Poison', desc: 'Applies damage over time to enemies hit.', feature: new PoisonFeature() },
+      { id: 'slow', title: 'Slow', desc: 'Reduces enemy movement speed for a duration.', feature: new SlowFeature() }
     ];
     this.currentIndex = 0;
     this.animationFrameId = null;
@@ -41,44 +41,48 @@ export class Help {
     const track = document.getElementById('helpCarouselTrack');
     const indicators = document.getElementById('helpCarouselIndicators');
     
-    if (track && indicators) {
-      track.innerHTML = '';
-      indicators.innerHTML = '';
-      
-      this.features.forEach((item, index) => {
-        const li = document.createElement('li');
-        li.className = 'carousel-slide';
-        li.innerHTML = `
-          <div class="slide-row1">
-            <div class="slide-col-icon">
-              <canvas id="${item.id}" width="100" height="100"></canvas>
-            </div>
-            <div class="slide-col-preview">
-              <canvas id="${item.id}-preview" width="100" height="100"></canvas>
-            </div>
-          </div>
-          <div class="slide-row2">
-            <div class="slide-title" style="color: ${item.feature.color}">${item.title}</div>
-            <div class="slide-desc">${item.desc}</div>
-          </div>
-        `;
-        track.appendChild(li);
+    if (!track || !indicators) return;
 
-        const dot = document.createElement('div');
-        dot.className = `indicator ${index === 0 ? 'current' : ''}`;
-        dot.dataset.index = index;
-        indicators.appendChild(dot);
-      });
-    }
+    track.innerHTML = '';
+    indicators.innerHTML = '';
+    
+    const trackFragment = document.createDocumentFragment();
+    const indicatorsFragment = document.createDocumentFragment();
+    
+    this.features.forEach((item, index) => {
+      const li = document.createElement('li');
+      li.className = 'carousel-slide';
+      li.innerHTML = `
+        <div class="slide-row1">
+          <div class="slide-col-icon">
+            <canvas id="${item.id}" width="100" height="100"></canvas>
+          </div>
+          <div class="slide-col-preview">
+            <canvas id="${item.id}-preview" width="100" height="100"></canvas>
+          </div>
+        </div>
+        <div class="slide-row2">
+          <div class="slide-title" style="color: ${item.feature.color}">${item.title}</div>
+          <div class="slide-desc">${item.desc}</div>
+        </div>
+      `;
+      trackFragment.appendChild(li);
 
-    setTimeout(() => {
-      this.features.forEach(({ id, feature }) => {
-        const canvas = document.getElementById(id);
-        if (canvas) {
-          IconRenderer.renderIcon(canvas, feature);
-        }
-      });
-    }, 50);
+      const dot = document.createElement('div');
+      dot.className = `indicator ${index === 0 ? 'current' : ''}`;
+      dot.dataset.index = index;
+      indicatorsFragment.appendChild(dot);
+    });
+
+    track.appendChild(trackFragment);
+    indicators.appendChild(indicatorsFragment);
+
+    this.features.forEach(({ id, feature }) => {
+      const canvas = document.getElementById(id);
+      if (canvas) {
+        IconRenderer.renderIcon(canvas, feature);
+      }
+    });
   }
 
   setupEvents() {
