@@ -23,7 +23,8 @@ export const GAME_STATES = {
   PLAYING: 'PLAYING',
   PAUSED: 'PAUSED',
   GAME_OVER: 'GAME_OVER',
-  LIFE_LOST: 'LIFE_LOST'
+  LIFE_LOST: 'LIFE_LOST',
+  GAME_OVER_TRANSITION: 'GAME_OVER_TRANSITION'
 };
 
 export class Game {
@@ -200,7 +201,12 @@ export class Game {
     
     if (this.lives <= 0) {
       this.audioManager.playSound('gameover');
-      this.updateState(GAME_STATES.GAME_OVER);
+      this.updateState(GAME_STATES.GAME_OVER_TRANSITION);
+      this.canvas.style.filter = 'blur(2px)';
+      setTimeout(() => {
+        this.canvas.style.filter = 'none';
+        this.updateState(GAME_STATES.GAME_OVER);
+      }, 3000);
     } else {
       this.updateState(GAME_STATES.LIFE_LOST);
     }

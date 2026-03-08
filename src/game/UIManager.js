@@ -367,6 +367,17 @@ export class UIManager {
     if (finalScoreEl) finalScoreEl.innerText = `Score: ${this.formatNumber(this.game.score)}`;
     const finalLevelEl = document.getElementById('finalLevel');
     if (finalLevelEl) finalLevelEl.innerText = `Level: ${this.game.level}`;
+    
+    const gameOverMsgEl = document.getElementById('gameOverMsg');
+    if (gameOverMsgEl) {
+      if (isFirebaseEnabled && !auth.currentUser) {
+        gameOverMsgEl.innerText = "Log in next time if you want your top score to be visible to other players!";
+        gameOverMsgEl.classList.remove('hidden');
+      } else {
+        gameOverMsgEl.classList.add('hidden');
+      }
+    }
+
     this.showModal('gameOver');
   }
 }

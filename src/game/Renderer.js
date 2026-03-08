@@ -14,7 +14,7 @@ export class Renderer {
       return;
     }
 
-    if (this.game.state === GAME_STATES.PLAYING || this.game.state === GAME_STATES.PAUSED || this.game.state === GAME_STATES.GAME_OVER || this.game.state === GAME_STATES.LIFE_LOST) {
+    if (this.game.state === GAME_STATES.PLAYING || this.game.state === GAME_STATES.PAUSED || this.game.state === GAME_STATES.GAME_OVER || this.game.state === GAME_STATES.LIFE_LOST || this.game.state === GAME_STATES.GAME_OVER_TRANSITION) {
       this.drawFlashes();
       
       this.game.tower.drawBackground(this.ctx, this.game);

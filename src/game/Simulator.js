@@ -1,3 +1,5 @@
+import { GAME_STATES } from './Game.js';
+
 export class Simulator {
   static run(game, targetLevel = 50) {
     console.log(`%c[SIMULATOR] Starting Headless Run to Level ${targetLevel}...`, 'color: #0df; font-weight: bold;');
@@ -14,7 +16,7 @@ export class Simulator {
 
     // Reset and start
     game.reset();
-    game.updateState(1); // PLAYING
+    game.updateState(GAME_STATES.PLAYING);
 
     let virtualTime = game.time;
     const timeStep = 16 / 1000; // 16ms in seconds
@@ -27,6 +29,11 @@ export class Simulator {
     while (game.lives > 0 && game.level <= targetLevel && loops < maxLoops) {
       game.update(timeStep);
       virtualTime += timeStep * 1000;
+
+      // Debugging Level 8
+      if (game.level === 8 && loops % 1000 === 0) {
+        console.log(`[SIMULATOR] Level 8 Debug: Enemies=${game.enemies.length}, Lives=${game.lives}, Currency=${game.currency}, TowerDmg=${game.tower.damage.toFixed(1)}`);
+      }
 
       // Auto-buy logic
       let bought;
