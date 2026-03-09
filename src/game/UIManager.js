@@ -48,6 +48,7 @@ export class UIManager {
     const cleanup = () => {
       yesBtn.removeEventListener('click', handleYes);
       noBtn.removeEventListener('click', handleNo);
+      this.onNoConfirm = null;
     };
 
     const handleYes = () => {
@@ -62,6 +63,8 @@ export class UIManager {
 
     yesBtn.addEventListener('click', handleYes);
     noBtn.addEventListener('click', handleNo);
+
+    this.onNoConfirm = handleNo;
 
     this.showModal('confirm');
   }
@@ -114,7 +117,7 @@ export class UIManager {
           if (this.loginBtn) this.loginBtn.classList.add('hidden');
           if (this.logoutBtn) this.logoutBtn.classList.remove('hidden');
           if (this.userInfo) {
-            this.userInfo.innerText = `Logged in as: ${user.displayName}`;
+            this.userInfo.innerText = `Howdy ${user.displayName} !`;
           }
 
           if (this.game.playerName === DEFAULT_USERNAME) {
@@ -227,7 +230,11 @@ export class UIManager {
     });
 
     this.setupButton('exitBtn', () => {
-      this.game.updateState(GAME_STATES.MENU);
+      this.showConfirm("MAIN MENU", "Are you sure you want to quit the game and return to the main menu?", () => {
+        this.game.updateState(GAME_STATES.MENU, { force: true });
+      }, () => {
+        this.showModal('pause');
+      });
     });
 
     const fullscreenBtn = this.setupButton('fullscreenBtn', () => {
@@ -269,7 +276,21 @@ export class UIManager {
         const state = this.game.state;
         const currentModal = this.modalManager.currentModal;
 
-        if (state === GAME_STATES.MENU && currentModal === 'mainMenu') {
+        if (currentModal === 'confirm') {
+          if (this.onNoConfirm) {
+            this.onNoConfirm();
+          }
+        } else if (currentModal === 'towerFeatures' || currentModal === 'scoring') {
+          this.showModal('helpMenu');
+        } else if (currentModal === 'helpMenu') {
+          if (state === GAME_STATES.MENU) {
+            this.showModal('mainMenu');
+          } else if (state === GAME_STATES.PAUSED) {
+            this.showModal('pause');
+          } else {
+            this.closeAllModals();
+          }
+        } else if (state === GAME_STATES.MENU && currentModal === 'mainMenu') {
           this.showConfirm("QUIT GAME", "Are you sure you want to quit the game?", () => {
             window.removeEventListener('popstate', this.popstateHandler);
             window.history.go(-2);
@@ -278,31 +299,24 @@ export class UIManager {
           });
         } else if (state === GAME_STATES.PLAYING) {
           this.game.updateState(GAME_STATES.PAUSED);
-          setTimeout(() => {
-            this.showConfirm("MAIN MENU", "Are you sure you want to return to the main menu?", () => {
-              this.game.updateState(GAME_STATES.MENU, { force: true });
-            }, () => {
-              this.game.updateState(GAME_STATES.PLAYING);
-            });
-          }, 10);
         } else if (state === GAME_STATES.PAUSED && currentModal === 'pause') {
-          setTimeout(() => {
-            this.showConfirm("MAIN MENU", "Are you sure you want to return to the main menu?", () => {
-              this.game.updateState(GAME_STATES.MENU, { force: true });
-            }, () => {
-              this.showModal('pause');
-            });
-          }, 10);
-        } else if (['helpMenu', 'towerFeatures', 'scoring'].includes(currentModal)) {
-          if (state === GAME_STATES.MENU) {
-            this.showModal('mainMenu');
-          } else if (state === GAME_STATES.PAUSED) {
+          this.showConfirm("MAIN MENU", "Are you sure you want to return to the main menu?", () => {
+            this.game.updateState(GAME_STATES.MENU, { force: true });
+          }, () => {
             this.showModal('pause');
-          }
+          });
+        } else if (currentModal === 'gameOver' || currentModal === 'lifeLost') {
+          this.game.updateState(GAME_STATES.MENU, { force: true });
         }
       }
     };
     window.addEventListener('popstate', this.popstateHandler);
+
+    // Always intercept page exit with a confirmation modal
+    window.addEventListener('beforeunload', (event) => {
+      event.preventDefault();
+      event.returnValue = '';
+    });
 
     // Show main menu initially
     if (this.game.state === GAME_STATES.MENU) {
@@ -321,24 +335,20 @@ export class UIManager {
   }
 
   toggleFullscreen() {
-    const elem = document.documentElement;
+    // Ciblez impérativement le conteneur qui englobe Canvas ET UI
+    const elem = document.getElementById('game-container'); 
+
     if (!document.fullscreenElement) {
       if (elem.requestFullscreen) {
         elem.requestFullscreen().catch(err => {
-          console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+          console.error(`Error: ${err.message}`);
         });
       } else if (elem.webkitRequestFullscreen) { /* Safari */
         elem.webkitRequestFullscreen();
-      } else if (elem.msRequestFullscreen) { /* IE11 */
-        elem.msRequestFullscreen();
       }
     } else {
       if (document.exitFullscreen) {
         document.exitFullscreen();
-      } else if (document.webkitExitFullscreen) { /* Safari */
-        document.webkitExitFullscreen();
-      } else if (document.msExitFullscreen) { /* IE11 */
-        document.msExitFullscreen();
       }
     }
   }

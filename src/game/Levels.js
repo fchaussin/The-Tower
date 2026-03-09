@@ -94,7 +94,8 @@ export const DIFFICULTY_LEVELS = {
     enemyCountMult: 0.5,
     enemySpeedMult: 0.8,
     enemyHealthMult: 0.5,
-    currencyBonusMult: 1.5,
+    currencyBonusMult: 0.5,
+    scoreMult: 0.5,
     color: '#0f0'
   },
   MEDIUM: {
@@ -103,16 +104,18 @@ export const DIFFICULTY_LEVELS = {
     enemyCountMult: 0.8,
     enemySpeedMult: 1.0,
     enemyHealthMult: 0.8,
-    currencyBonusMult: 1.2,
+    currencyBonusMult: 1.0,
+    scoreMult: 1.0,
     color: '#ff0'
   },
   HARD: {
     id: 'HARD',
     name: 'Hard',
-    enemyCountMult: 1.2,
-    enemySpeedMult: 1.2,
-    enemyHealthMult: 1.2,
-    currencyBonusMult: 1.0,
+    enemyCountMult: 1.1,
+    enemySpeedMult: 1.1,
+    enemyHealthMult: 1.1,
+    currencyBonusMult: 1.5,
+    scoreMult: 1.5,
     color: '#f00'
   }
 };

@@ -79,7 +79,7 @@ If you want to test the global leaderboard functionality locally, you will need 
     *   `Tower.js`: Logic for the player's tower (targeting, shooting).
     *   `Renderer.js`: Handles all Canvas drawing operations.
     *   `UIManager.js`: Manages the HTML/CSS UI overlays (menus, leaderboards).
-    *   `ModalManager.js`: Handles the display and hiding of HTML `<dialog>` modals.
+    *   `ModalManager.js`: Handles the display and hiding of HTML `<div>` modals.
     *   `LeaderboardManager.js`: Manages fetching, sorting, and saving scores locally and to Firebase.
     *   `IconRenderer.js`: Handles rendering the tower feature icons onto canvas elements.
     *   `AudioManager.js`: Synthesizes sound effects using the Web Audio API.

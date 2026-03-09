@@ -37,6 +37,9 @@ export class Enemy extends Entity {
       this.originalSpeed = this.speed;
       this.updateVelocity();
     }
+    
+    this.currencyMult = settings.currencyBonusMult || 1;
+    this.scoreMult = settings.scoreMult || 1;
   }
   updateVelocity() {
     let dx = this.targetX - this.x;
@@ -102,8 +105,8 @@ export class Enemy extends Entity {
     } else {
       game.audioManager.playExplosion();
     }
-    game.currency += this.getCurrencyValue();
-    game.score += this.getScoreValue();
+    game.currency += Math.ceil(this.getCurrencyValue() * (this.currencyMult || 1));
+    game.score += Math.ceil(this.getScoreValue() * (this.scoreMult || 1));
     if (game.spawnShockwave) {
       let power = Math.min(200, this.maxHealth);
       let maxRadius = this.radius * 2 + 20 + power;

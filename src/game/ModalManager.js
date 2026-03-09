@@ -11,38 +11,32 @@ export class ModalManager {
       pause: document.getElementById('pause-menu'),
       confirm: document.getElementById('confirm-modal')
     };
-
-    // Prevent closing with ESC
-    Object.values(this.modals).forEach(m => {
-      if (m) {
-        m.addEventListener('cancel', (e) => {
-          e.preventDefault();
-          // On mobile, the back button might trigger 'cancel' on the dialog instead of 'popstate'.
-          // By preventing default, we keep the dialog open.
-          // Then we manually trigger the back navigation so our popstate handler catches it.
-          window.history.back();
-        });
-      }
-    });
+    this.backdrop = document.getElementById('menu-backdrop');
   }
 
   showModal(modalName) {
-    this.closeAllModals();
+    this.closeAllModals(true);
     this.currentModal = modalName;
     const modalEl = this.modals[modalName];
-    if (modalEl && !modalEl.open) {
+    if (modalEl) {
       modalEl.style.pointerEvents = 'auto';
-      modalEl.showModal();
+      modalEl.setAttribute('open', '');
+    }
+    if (this.backdrop) {
+      this.backdrop.classList.remove('hidden');
     }
   }
 
-  closeAllModals() {
+  closeAllModals(keepBackdrop = false) {
     this.currentModal = null;
     Object.values(this.modals).forEach(m => {
-      if (m && m.open) {
+      if (m && m.hasAttribute('open')) {
         m.style.pointerEvents = 'none';
-        m.close();
+        m.removeAttribute('open');
       }
     });
+    if (this.backdrop && !keepBackdrop) {
+      this.backdrop.classList.add('hidden');
+    }
   }
 }
