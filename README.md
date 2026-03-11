@@ -5,7 +5,7 @@ A minimalist, highly addictive browser-based tower defense game built with HTML5
 ## Features
 
 *   **Infinite Mathematical Scaling:** The game features a true infinite progression system. Enemy health and speed scale exponentially and linearly across levels, ensuring the game remains challenging forever.
-*   **Difficulty Settings:** Choose between **Easy**, **Medium**, and **Hard** modes. Difficulty affects enemy health, speed, count, and currency bonuses. The chosen difficulty is recorded on the global leaderboard.
+*   **Difficulty Settings:** Choose between **Easy**, **Medium**, and **Hard** modes. Difficulty affects enemy health, speed, count, and rewards. Hard mode yields a 1.5x multiplier to score and currency, while Easy mode yields a 0.5x multiplier. The chosen difficulty is recorded on the global leaderboard.
 *   **8 Upgradeable Stats (Exponential Scaling):** Upgrades use an exponential cost and power formula to keep pace with infinite enemy scaling.
     *   **Damage:** Increase the power of your projectiles.
     *   **Cooldown:** Shoot faster (with diminishing returns protection).
@@ -87,6 +87,10 @@ If you want to test the global leaderboard functionality locally, you will need 
     *   `Projectile.js`: Logic for the player's bullets.
     *   `enemies/`: Contains classes for all 57 distinct enemy types.
     *   `features/`: Contains classes for the different tower upgrades.
+
+## Author
+
+Created by **François Chaussin**.
 
 ## License
 
