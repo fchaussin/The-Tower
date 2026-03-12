@@ -101,7 +101,10 @@
           <button id="menuSoundBtn" class="btn btn-icon text-danger" style="border-color: var(--accent-danger);" aria-label="Toggle sound">🔇</button>
         </div>
       </div>
-      <button id="fullscreenBtn" class="btn secondary text-sm">ENTER FULL SCREEN</button>
+      <div class="btn-group-row" style="flex-direction: row;">
+        <button id="installAppBtn" class="btn secondary text-sm flex-1 hidden installAppBtn">INSTALL APP</button>
+        <button id="fullscreenBtn" class="btn secondary text-sm flex-1">FULLSCREEN</button>
+      </div>
       
       <div class="leaderboard">
         <h2>Top Scores</h2>
@@ -140,6 +143,8 @@
       <div class="btn-group">
         <button id="openTowerFeaturesBtn" class="btn">Tower Features</button>
         <button id="openScoringBtn" class="btn">Top scores</button>
+        <p class="text-info hidden installAppBtn" style="margin-top: 10px; font-size: 0.9em; color: #0df; margin-bottom: 0; cursor: pointer;">Install the application to play offline.</p>
+        <button id="installAppBtnHelp" class="btn hidden installAppBtn">INSTALL APP</button>
         <button id="closeHelpMenuBtn" class="btn secondary">BACK</button>
       </div>
     </div>

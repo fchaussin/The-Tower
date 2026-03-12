@@ -43,6 +43,16 @@ To test game balancing at high levels without playing manually:
 *   **Frontend:** HTML5 Canvas, Vanilla JavaScript (ES6+), CSS3.
 *   **Backend/Database:** Firebase (Authentication, Firestore) for global leaderboards.
 *   **Build Tool:** Vite.
+*   **PWA:** Custom Service Worker and Web App Manifest for offline support.
+
+## Progressive Web App (PWA)
+
+The game is fully playable offline as a Progressive Web App. The implementation relies on:
+*   **Web App Manifest:** A `manifest.json` file in the `public/` directory defines the app's name, icons, theme colors, and display mode (`standalone`), allowing it to be installed on mobile and desktop devices.
+*   **Service Worker:** A custom service worker (`public/sw.js`) intercepts network requests.
+    *   **Caching Strategy:** It attempts to fetch from the network and falls back to the cache if offline. During the `install` phase, it pre-caches core assets (`/`, `/index.html`, `/manifest.json`, `/icon.svg`).
+    *   **Offline Play:** Once the assets are cached, the game can be loaded and played entirely without an internet connection. Local scores will still be saved to `localStorage`.
+    *   **Push Notifications:** The service worker also includes basic event listeners for push notifications.
 
 ## Local Development
 

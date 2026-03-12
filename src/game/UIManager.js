@@ -225,10 +225,6 @@ export class UIManager {
       this.showModal('helpMenu');
     });
 
-    this.setupButton('pauseFullscreenBtn', () => {
-      this.toggleFullscreen();
-    });
-
     this.setupButton('exitBtn', () => {
       this.showConfirm("MAIN MENU", "Are you sure you want to quit the game and return to the main menu?", () => {
         this.game.updateState(GAME_STATES.MENU, { force: true });
@@ -243,7 +239,7 @@ export class UIManager {
     
     if (fullscreenBtn) {
       document.addEventListener('fullscreenchange', () => {
-        fullscreenBtn.innerText = !document.fullscreenElement ? 'ENTER FULLSCREEN' : 'EXIT FULLSCREEN';
+        fullscreenBtn.innerText = !document.fullscreenElement ? 'FULLSCREEN' : 'EXIT FULLSCREEN';
       });
     }
 

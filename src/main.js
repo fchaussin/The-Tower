@@ -1,14 +1,51 @@
 import './index.css';
 import { Game } from './game/Game.js';
 
-// Service worker registration removed for development to prevent caching issues
+// Register service worker for offline PWA support
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(function(registrations) {
-    for(let registration of registrations) {
-      registration.unregister();
-    }
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').then(registration => {
+      console.log('SW registered: ', registration);
+    }).catch(registrationError => {
+      console.log('SW registration failed: ', registrationError);
+    });
   });
 }
+
+// PWA Install Prompt Logic
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  // Prevent the mini-infobar from appearing on mobile
+  e.preventDefault();
+  // Stash the event so it can be triggered later.
+  deferredPrompt = e;
+  // Update UI notify the user they can install the PWA
+  const installBtns = document.querySelectorAll('.installAppBtn');
+  installBtns.forEach(installBtn => {
+    installBtn.classList.remove('hidden');
+    
+    installBtn.addEventListener('click', async () => {
+      // Hide the app provided install promotion
+      installBtns.forEach(btn => btn.classList.add('hidden'));
+      // Show the install prompt
+      deferredPrompt.prompt();
+      // Wait for the user to respond to the prompt
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`User response to the install prompt: ${outcome}`);
+      // We've used the prompt, and can't use it again, throw it away
+      deferredPrompt = null;
+    });
+  });
+});
+
+window.addEventListener('appinstalled', () => {
+  // Hide the app-provided install promotion
+  const installBtns = document.querySelectorAll('.installAppBtn');
+  installBtns.forEach(btn => btn.classList.add('hidden'));
+  // Clear the deferredPrompt so it can be garbage collected
+  deferredPrompt = null;
+  console.log('PWA was installed');
+});
 
 const initGame = () => {
   const canvas = document.getElementById('gameCanvas');
