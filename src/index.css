@@ -309,6 +309,13 @@ canvas#gameCanvas {
   margin-bottom: 1.25rem;
 }
 
+#finalScore, #finalLevel {
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
+  font-weight: bold;
+  margin: 0.25rem 0;
+  color: var(--text-main);
+}
+
 .input-group {
   width: 100%;
   text-align: left;
