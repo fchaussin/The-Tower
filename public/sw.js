@@ -1,63 +1,39 @@
-const CACHE_NAME = 'the-tower-v2';
-const ASSETS_TO_CACHE = [
+const CACHE_NAME = 'idle-td-cache-v5';
+const urlsToCache = [
   '/',
   '/index.html',
-  '/manifest.json',
-  '/icon.svg'
+  '/icon.svg?v=3',
+  '/manifest.json?v=3'
 ];
 
-self.addEventListener('install', (event) => {
+self.addEventListener('install', event => {
+  self.skipWaiting(); // Force the waiting service worker to become the active service worker.
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
+    caches.open(CACHE_NAME)
+      .then(cache => {
+        return cache.addAll(urlsToCache);
+      })
   );
-  self.skipWaiting();
 });
 
-self.addEventListener('activate', (event) => {
+self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
+    caches.keys().then(cacheNames => {
       return Promise.all(
-        cacheNames.map((cacheName) => {
+        cacheNames.map(cacheName => {
           if (cacheName !== CACHE_NAME) {
             return caches.delete(cacheName);
           }
         })
       );
-    })
+    }).then(() => self.clients.claim()) // Claim clients immediately
   );
-  self.clients.claim();
 });
 
-self.addEventListener('fetch', (event) => {
+self.addEventListener('fetch', event => {
   event.respondWith(
     fetch(event.request).catch(() => {
       return caches.match(event.request);
     })
-  );
-});
-
-self.addEventListener('push', (event) => {
-  const data = event.data ? event.data.json() : { title: 'New Top Score!', body: 'Someone just made it to the Top 10!' };
-  const title = data.title;
-  const options = {
-    body: data.body,
-    icon: '/icon.svg',
-    badge: '/icon.svg',
-    data: {
-      url: self.location.origin
-    }
-  };
-
-  event.waitUntil(
-    self.registration.showNotification(title, options)
-  );
-});
-
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  event.waitUntil(
-    clients.openWindow(event.notification.data.url)
   );
 });

@@ -1,81 +1,142 @@
 import './index.css';
 import { Game } from './game/Game.js';
 
-// Register service worker for offline PWA support
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').then(registration => {
-      console.log('SW registered: ', registration);
-    }).catch(registrationError => {
-      console.log('SW registration failed: ', registrationError);
-    });
-  });
-}
-
-// PWA Install Prompt Logic
 let deferredPrompt;
+
 window.addEventListener('beforeinstallprompt', (e) => {
   // Prevent the mini-infobar from appearing on mobile
   e.preventDefault();
   // Stash the event so it can be triggered later.
   deferredPrompt = e;
   // Update UI notify the user they can install the PWA
-  const installBtns = document.querySelectorAll('.installAppBtn');
-  installBtns.forEach(installBtn => {
-    installBtn.classList.remove('hidden');
-    
-    installBtn.addEventListener('click', async () => {
-      // Hide the app provided install promotion
-      installBtns.forEach(btn => btn.classList.add('hidden'));
-      // Show the install prompt
-      deferredPrompt.prompt();
-      // Wait for the user to respond to the prompt
-      const { outcome } = await deferredPrompt.userChoice;
-      console.log(`User response to the install prompt: ${outcome}`);
-      // We've used the prompt, and can't use it again, throw it away
-      deferredPrompt = null;
-    });
+  document.querySelectorAll('.installAppBtn').forEach(btn => {
+    btn.classList.remove('hidden');
   });
 });
 
-window.addEventListener('appinstalled', () => {
-  // Hide the app-provided install promotion
-  const installBtns = document.querySelectorAll('.installAppBtn');
-  installBtns.forEach(btn => btn.classList.add('hidden'));
-  // Clear the deferredPrompt so it can be garbage collected
-  deferredPrompt = null;
-  console.log('PWA was installed');
+document.addEventListener('DOMContentLoaded', () => {
+  const canvas = document.getElementById('gameCanvas');
+  const game = new Game(canvas);
+  
+  // Handle install button clicks
+  document.querySelectorAll('.installAppBtn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          console.log('User accepted the install prompt');
+        } else {
+          console.log('User dismissed the install prompt');
+        }
+        deferredPrompt = null;
+        document.querySelectorAll('.installAppBtn').forEach(b => b.classList.add('hidden'));
+      }
+    });
+  });
+
+  // Hide splash screen
+  const splashScreen = document.getElementById('splash-screen');
+  if (splashScreen) {
+    setTimeout(() => {
+      splashScreen.style.opacity = '0';
+      setTimeout(() => {
+        splashScreen.style.display = 'none';
+      }, 500);
+    }, 500);
+  }
+
+  // Auto-fullscreen for PWA on first interaction
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                       window.matchMedia('(display-mode: fullscreen)').matches || 
+                       window.navigator.standalone;
+  
+  if (isStandalone) {
+    const requestFS = () => {
+      if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.log(`Error attempting to enable fullscreen: ${err.message}`);
+        });
+      }
+      document.removeEventListener('click', requestFS);
+      document.removeEventListener('touchstart', requestFS);
+    };
+    document.addEventListener('click', requestFS);
+    document.addEventListener('touchstart', requestFS);
+  }
 });
 
-const initGame = () => {
-  const canvas = document.getElementById('gameCanvas');
-  if (canvas) {
-    new Game(canvas);
-  }
-};
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initGame);
-} else {
-  initGame();
+// Register Service Worker for PWA
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').then(registration => {
+      console.log('SW registered: ', registration);
+      
+      // Check for updates
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            // New update available
+            console.log('New update available, prompting user...');
+            
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+              position: fixed;
+              bottom: 20px;
+              left: 50%;
+              transform: translateX(-50%);
+              background: var(--bg-menu, rgba(17, 17, 17, 0.95));
+              color: var(--text-main, #fff);
+              padding: 15px 20px;
+              border-radius: 8px;
+              border: 1px solid var(--accent-primary, #0df);
+              box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+              z-index: 10000;
+              display: flex;
+              align-items: center;
+              gap: 15px;
+              font-family: var(--font-mono, monospace);
+            `;
+            
+            notification.innerHTML = `
+              <span>New version available!</span>
+              <div style="display:flex;gap:10px;">
+                <button id="update-btn" style="background:var(--accent-primary, #0df);color:var(--bg-color, #111);border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-weight:bold;font-family:inherit;">Update</button>
+                <button id="dismiss-btn" style="background:transparent;color:var(--text-muted, #aaa);border:1px solid var(--border-input, #555);padding:5px 10px;border-radius:4px;cursor:pointer;font-family:inherit;">Dismiss</button>
+              </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            document.getElementById('update-btn').addEventListener('click', () => {
+              if (caches) {
+                caches.keys().then(names => {
+                  for (let name of names) caches.delete(name);
+                });
+              }
+              window.location.reload();
+            });
+            
+            document.getElementById('dismiss-btn').addEventListener('click', () => {
+              notification.remove();
+            });
+          }
+        });
+      });
+    }).catch(registrationError => {
+      console.log('SW registration failed: ', registrationError);
+    });
+  });
 }
 
-// Remove splash screen once all assets (including fonts) are fully loaded
-const removeSplash = () => {
-  const splash = document.getElementById('splash-screen');
-  if (splash) {
-    splash.style.opacity = '0';
-    setTimeout(() => splash.remove(), 500); // 500ms matches the CSS transition duration
-  }
-};
-
-Promise.race([
-  Promise.all([
-    new Promise(resolve => {
-      if (document.readyState === 'complete') resolve();
-      else window.addEventListener('load', resolve);
-    }),
-    document.fonts ? document.fonts.ready : Promise.resolve()
-  ]),
-  new Promise(resolve => setTimeout(resolve, 2000)) // Fallback timeout of 2 seconds
-]).then(removeSplash).catch(removeSplash);
+// Force clear caches if we're stuck
+if (caches) {
+  caches.keys().then(names => {
+    for (let name of names) {
+      if (name.startsWith('idle-td-cache')) {
+        caches.delete(name);
+      }
+    }
+  });
+}

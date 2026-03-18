@@ -99,6 +99,13 @@ export class UIManager {
         this.game.playerName = val;
         localStorage.setItem('tower_playerName', val);
       });
+      this.playerNameInput.addEventListener('blur', (e) => {
+        if (!e.target.value.trim()) {
+          e.target.value = DEFAULT_USERNAME;
+          this.game.playerName = DEFAULT_USERNAME;
+          localStorage.setItem('tower_playerName', DEFAULT_USERNAME);
+        }
+      });
     }
 
     if (this.difficultySelect) {
@@ -170,7 +177,7 @@ export class UIManager {
     });
 
     this.setupButton('mainMenuBtn', () => {
-      this.game.updateState(GAME_STATES.MENU);
+      this.quitGame();
     });
 
     this.setupButton('retryLevelBtn', () => {
@@ -178,7 +185,7 @@ export class UIManager {
     });
 
     this.setupButton('mainMenuFromLifeLostBtn', () => {
-      this.game.updateState(GAME_STATES.MENU);
+      this.quitGame();
     });
 
     this.setupButton('helpBtn', () => {
@@ -226,8 +233,8 @@ export class UIManager {
     });
 
     this.setupButton('exitBtn', () => {
-      this.showConfirm("MAIN MENU", "Are you sure you want to quit the game and return to the main menu?", () => {
-        this.game.updateState(GAME_STATES.MENU, { force: true });
+      this.showConfirm("END GAME", "Are you sure you want to end the current game?", () => {
+        this.quitGame();
       }, () => {
         this.showModal('pause');
       });
@@ -242,6 +249,32 @@ export class UIManager {
         fullscreenBtn.innerText = !document.fullscreenElement ? 'FULLSCREEN' : 'EXIT FULLSCREEN';
       });
     }
+
+    const shareBtn = this.setupButton('shareBtn', async () => {
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: 'Idle Tower Defense',
+            text: 'Check out this minimalist Idle Tower Defense game!',
+            url: window.location.href,
+          });
+        } catch (err) {
+          console.log('Error sharing:', err);
+        }
+      } else {
+        // Fallback: copy to clipboard
+        try {
+          await navigator.clipboard.writeText(window.location.href);
+          const originalText = shareBtn.innerHTML;
+          shareBtn.innerHTML = '✓';
+          setTimeout(() => {
+            shareBtn.innerHTML = originalText;
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy link:', err);
+        }
+      }
+    });
 
     this.setupButton('menuSoundBtn', () => {
       this.game.audioManager.init();
@@ -288,8 +321,23 @@ export class UIManager {
           }
         } else if (state === GAME_STATES.MENU && currentModal === 'mainMenu') {
           this.showConfirm("QUIT GAME", "Are you sure you want to quit the game?", () => {
-            window.removeEventListener('popstate', this.popstateHandler);
-            window.history.go(-2);
+            this.showModal('mainMenu'); // Close the confirm modal first so it doesn't get stuck
+            
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+            if (isStandalone) {
+              window.close();
+              // Fallback if window.close() is blocked by the mobile OS
+              setTimeout(() => {
+                document.body.innerHTML = '<div style="display:flex;flex-direction:column;justify-content:center;align-items:center;height:100vh;background:#111;color:#fff;font-family:sans-serif;text-align:center;padding:20px;"><h2>Game Ended</h2><p style="color:#aaa;margin-top:10px;">Go back several times to close the app.</p></div>';
+              }, 300);
+            } else {
+              window.removeEventListener('popstate', this.popstateHandler);
+              window.history.go(-2);
+              // Fallback if history.go(-2) fails (e.g. opened in new tab)
+              setTimeout(() => {
+                document.body.innerHTML = '<div style="display:flex;flex-direction:column;justify-content:center;align-items:center;height:100vh;background:#111;color:#fff;font-family:sans-serif;text-align:center;padding:20px;"><h2>Game Ended</h2><p style="color:#aaa;margin-top:10px;">Go back several times to close the app.</p></div>';
+              }, 300);
+            }
           }, () => {
             this.showModal('mainMenu');
           });
@@ -347,6 +395,10 @@ export class UIManager {
         document.exitFullscreen();
       }
     }
+  }
+
+  quitGame() {
+    this.game.updateState(GAME_STATES.MENU, { force: true });
   }
 
   formatNumber(num) {

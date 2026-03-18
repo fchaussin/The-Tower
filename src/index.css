@@ -32,6 +32,7 @@ html {
   overflow: hidden;
   background-color: var(--bg-color);
   font-family: var(--font-mono);
+  touch-action: none;
 }
 
 h1 {
@@ -283,7 +284,6 @@ canvas#gameCanvas {
   }
 
   .menu-container h1 {
-    font-size: 2rem;
     margin-top: 1.25rem;
     margin-bottom: 1.25rem;
   }
@@ -292,12 +292,14 @@ canvas#gameCanvas {
 
 
 .menu-container h1 {
-  font-size: 3rem;
+  font-size: clamp(2rem, 0.91rem + 5.45vw, 5rem);
+  letter-spacing: -0.05em;
   margin: 0;
   color: var(--accent-primary);
   text-shadow: 0 0 0.625rem rgb(from var(--accent-primary) r g b / 0.8);
   line-height: 1;
   font-variant: small-caps;
+  white-space: nowrap;
 }
 
 .menu-container h2 {
@@ -404,6 +406,18 @@ canvas#gameCanvas {
 .btn-icon {
   width: 3.125rem;
   padding: 0.625rem;
+  background: var(--bg-input);
+  color: var(--text-main);
+  border: 1px solid var(--border-input);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon:hover {
+  background: var(--border-color);
+  color: var(--text-main);
+  box-shadow: 0 0 0.5rem var(--border-color);
 }
 
 .btn-danger {
@@ -588,6 +602,35 @@ canvas#gameCanvas {
 }
 
 .hidden { display: none !important; }
+
+.update-toast {
+  position: fixed;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--bg-menu);
+  border: 1px solid var(--accent-primary);
+  border-radius: var(--radius);
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  z-index: 1000;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5);
+  color: var(--text-main);
+  pointer-events: auto;
+  width: max-content;
+  max-width: 90vw;
+  text-align: center;
+}
+
+.update-toast .btn-sm {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  min-height: auto;
+}
 
 /* --- Scrollbar --- */
 

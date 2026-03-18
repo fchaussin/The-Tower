@@ -2,13 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#111111">
   <meta name="description" content="A minimalist tower defense game">
   <meta name="author" content="François Chaussin">
-  <link rel="manifest" href="/manifest.json">
-  <link rel="icon" type="image/svg+xml" href="/icon.svg">
-  <link rel="apple-touch-icon" href="/icon.svg">
+  <meta property="og:title" content="Idle Tower Defense">
+  <meta property="og:description" content="A minimalist tower defense game">
+  <meta property="og:image" content="/icon.svg?v=3">
+  <meta property="og:type" content="website">
+  <link rel="manifest" href="/manifest.json?v=3">
+  <link rel="icon" type="image/svg+xml" href="/icon.svg?v=3">
+  <link rel="apple-touch-icon" href="/icon.svg?v=3">
   <title>Idle Tower Defense</title>
   <style>
     #splash-screen {
@@ -53,11 +57,32 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
+    .splash-logo {
+      width: 120px;
+      height: 120px;
+      margin-bottom: 20px;
+      border-radius: 24px;
+      box-shadow: 0 0 20px rgba(66, 135, 245, 0.3);
+      animation: pulse 2s infinite;
+    }
+    #splash-screen h1 {
+      font-size: clamp(2rem, 0.91rem + 5.45vw, 5rem);
+      letter-spacing: -0.05em;
+      margin: 0 0 1rem 0;
+      text-align: center;
+      white-space: nowrap;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); box-shadow: 0 0 20px rgba(66, 135, 245, 0.3); }
+      50% { transform: scale(1.05); box-shadow: 0 0 40px rgba(66, 135, 245, 0.6); }
+      100% { transform: scale(1); box-shadow: 0 0 20px rgba(66, 135, 245, 0.3); }
+    }
     .flex-center { display: flex; align-items: center; justify-content: center; gap: 10px; }
   </style>
 </head>
 <body>
 <div id="splash-screen">
+  <img src="/icon.svg?v=3" alt="Idle Tower Defense Logo" class="splash-logo" />
   <h1>Idle Tower Defense</h1>
   <div class="spinner"></div>
   <h2>LOADING…</h2>
@@ -70,6 +95,7 @@
     <div id="menu-backdrop" class="menu-backdrop hidden"></div>
     
     <div id="main-menu" class="menu-container">
+      <img src="/icon.svg?v=3" alt="Logo" style="width: 80px; height: 80px; margin-bottom: -10px; border-radius: 16px; box-shadow: 0 0 10px rgba(66, 135, 245, 0.5);" />
       <h1>Idle Tower Defense</h1>
       
       <div id="auth-section" class="hidden auth-section">
@@ -97,6 +123,7 @@
       <div class="btn-group-row">
         <button id="startBtn" class="btn flex-1">START GAME</button>
         <div class="icon-btns">
+          <button id="shareBtn" class="btn btn-icon" aria-label="Share">🔗</button>
           <button id="helpBtn" class="btn btn-icon" aria-label="Help">?</button>
           <button id="menuSoundBtn" class="btn btn-icon text-danger" style="border-color: var(--accent-danger);" aria-label="Toggle sound">🔇</button>
         </div>
@@ -133,7 +160,7 @@
       <p class="text-danger-light">Penalty: Progress since level start is lost</p>
       <div class="btn-group">
         <button id="retryLevelBtn" class="btn btn-danger">RETRY LEVEL</button>
-        <button id="mainMenuFromLifeLostBtn" class="btn secondary">QUIT GAME</button>
+        <button id="mainMenuFromLifeLostBtn" class="btn secondary">MAIN MENU</button>
       </div>
     </div>
 
@@ -181,7 +208,7 @@
         <button id="resumeBtn" class="btn">RESUME</button>
         <button id="resetBtn" class="btn secondary">RESET LEVEL</button>
         <button id="pauseHelpBtn" class="btn secondary">HELP</button>
-        <button id="exitBtn" class="btn secondary">QUIT GAME</button>
+        <button id="exitBtn" class="btn secondary">END GAME</button>
       </div>
     </div>
 
@@ -192,6 +219,12 @@
         <button id="confirmYesBtn" class="btn btn-danger">YES</button>
         <button id="confirmNoBtn" class="btn secondary">NO</button>
       </div>
+    </div>
+    
+    <div id="update-toast" class="update-toast hidden">
+      <span>A new version is available!</span>
+      <button id="updateAppBtn" class="btn btn-sm">UPDATE</button>
+      <button id="closeUpdateToastBtn" class="btn btn-sm secondary">LATER</button>
     </div>
   </div>
 </div>
