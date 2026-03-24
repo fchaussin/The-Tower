@@ -97,6 +97,13 @@
     <p id="pwa-enforcer-desc" style="font-size: 1.1rem; max-width: 400px; line-height: 1.5; margin-bottom: 30px; color: #aaa;">
       To play on mobile, you must install the game to your home screen. This ensures a smooth, full-screen experience.
     </p>
+
+    <div id="pwa-open-container" class="hidden" style="width: 100%; max-width: 350px; margin-bottom: 20px;">
+      <p id="pwa-open-desc" style="margin: 0 0 10px 0; color: #ddd; font-size: 0.9rem; line-height: 1.6; text-align: center;">
+        If the game is <strong>already installed</strong>:
+      </p>
+      <a id="pwa-open-btn" href="#" class="btn" style="display: block; width: 100%; padding: 12px; background: #4caf50; color: #fff; border: none; border-radius: 8px; font-weight: bold; font-size: 1.1rem; text-align: center; text-decoration: none; box-sizing: border-box;">OPEN APP</a>
+    </div>
     
     <div id="pwa-instructions-ios" class="hidden" style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; max-width: 350px;">
       <p style="margin: 0 0 10px 0; font-weight: bold;">On iOS (Safari):</p>
@@ -116,10 +123,12 @@
       </div>
       
       <div id="pwa-prompt-unavailable">
-        <p style="margin: 0; color: #ddd; font-size: 0.9rem; line-height: 1.6; text-align: left;">
-          If the game is <strong>already installed</strong>:<br>
+        <p style="margin: 0 0 15px 0; color: #ddd; font-size: 0.9rem; line-height: 1.6; text-align: left;">
+          <em>If the "OPEN APP" button fails:</em><br>
           &rarr; Open browser menu (⋮)<br>
-          &rarr; Select <strong>"Open __APP_SHORT_NAME__"</strong><br><br>
+          &rarr; Select <strong>"Open __APP_SHORT_NAME__"</strong>
+        </p>
+        <p style="margin: 0; color: #ddd; font-size: 0.9rem; line-height: 1.6; text-align: left;">
           To install it manually:<br>
           &rarr; Open browser menu (⋮)<br>
           &rarr; Select <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong>

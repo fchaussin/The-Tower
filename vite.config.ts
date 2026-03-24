@@ -38,33 +38,6 @@ export default defineConfig({
           .replace(/__THEME_COLOR__/g, appConfig.themeColor);
       }
     },
-    {
-      name: 'manifest-generator',
-      buildStart() {
-        const manifest = {
-          name: appConfig.name,
-          short_name: appConfig.shortName,
-          description: appConfig.description,
-          start_url: "/",
-          display: "fullscreen",
-          background_color: appConfig.backgroundColor,
-          theme_color: appConfig.themeColor,
-          icons: [
-            {
-              src: "/icon.svg?v=3",
-              sizes: "any",
-              type: "image/svg+xml",
-              purpose: "any maskable"
-            }
-          ]
-        };
-        const publicDir = path.resolve(__dirname, 'public');
-        if (!fs.existsSync(publicDir)) {
-          fs.mkdirSync(publicDir);
-        }
-        fs.writeFileSync(path.join(publicDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
-      }
-    },
     obfuscatorPlugin({
       include: ['src/**/*.js', 'src/**/*.ts'],
       exclude: [/node_modules/],

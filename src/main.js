@@ -40,11 +40,20 @@ window.addEventListener('appinstalled', () => {
   const promptUnavailable = document.getElementById('pwa-prompt-unavailable');
   const instructionsIos = document.getElementById('pwa-instructions-ios');
   const instructionsAndroid = document.getElementById('pwa-instructions-android');
+  const pwaOpenContainer = document.getElementById('pwa-open-container');
   
   if (promptAvailable) promptAvailable.classList.add('hidden');
   if (promptUnavailable) promptUnavailable.classList.add('hidden');
   if (instructionsIos) instructionsIos.classList.add('hidden');
   if (instructionsAndroid) instructionsAndroid.classList.add('hidden');
+  
+  if (pwaOpenContainer) {
+    pwaOpenContainer.classList.remove('hidden');
+    const pwaOpenDesc = document.getElementById('pwa-open-desc');
+    if (pwaOpenDesc) {
+      pwaOpenDesc.innerHTML = '<strong>Launch the game now:</strong>';
+    }
+  }
 });
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -95,6 +104,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (enforcerOverlay) {
       enforcerOverlay.classList.remove('hidden');
       
+      // Show the open app container
+      const pwaOpenContainer = document.getElementById('pwa-open-container');
+      if (pwaOpenContainer) {
+        pwaOpenContainer.classList.remove('hidden');
+      }
+      
       // Show OS-specific instructions
       if (os.name === 'iOS' || os.name === 'Mac OS') {
         document.getElementById('pwa-instructions-ios')?.classList.remove('hidden');
@@ -124,6 +139,20 @@ document.addEventListener('DOMContentLoaded', () => {
           deferredPrompt = null;
         }
       });
+    }
+    
+    // Handle the Android open button
+    const pwaOpenBtn = document.getElementById('pwa-open-btn');
+    if (pwaOpenBtn) {
+      const host = window.location.host;
+      if (os.name === 'Android') {
+        pwaOpenBtn.href = `intent://${host}#Intent;scheme=https;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;end`;
+      } else {
+        pwaOpenBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          window.open(`https://${host}`, '_blank');
+        });
+      }
     }
     
     // Stop execution here, don't initialize the game
