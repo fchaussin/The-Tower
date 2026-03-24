@@ -94,7 +94,7 @@ export class LeaderboardManager {
     this.scoreListEl.innerHTML = htmlStr;
   }
 
-  async saveScore() {
+  saveLocalScore() {
     const clientTimestamp = new Date().toISOString();
 
     this.game.topScores.push({
@@ -105,58 +105,71 @@ export class LeaderboardManager {
     this.game.topScores.sort((a, b) => b.score - a.score);
     this.game.topScores = this.game.topScores.slice(0, 10);
     localStorage.setItem('tower_topScores', JSON.stringify(this.game.topScores));
-
-    if (isFirebaseEnabled) {
-      try {
-        const userId = auth.currentUser?.uid;
-        if (!userId) throw new Error("Utilisateur non authentifié");
-        const batch = writeBatch(db);
-        const scoreRef = doc(collection(db, SCORES_COLLECTION));
-        const scoreId = scoreRef.id;
-        const leaderboardRef = doc(db, LEADERBOARD_COLLECTION, scoreId);
-        const name = String(this.game.playerName);
-        const score = Number(this.game.score);
-        const ts = serverTimestamp();
-
-        batch.set(scoreRef, {
-          name: name,
-          score: score,
-          level: Number(this.game.level),
-          difficulty: String(this.game.difficulty || 'normal'),
-          balance: Math.floor(Number(this.game.currency)),
-          elapsedTime: Number(this.game.time),
-          userId: userId,
-          timestamp: ts,
-          client_timestamp: clientTimestamp,
-          towerStats: {
-            damage: Number(this.game.tower.damage) || 0,
-            cooldown: Number(this.game.tower.cooldown) || 0,
-            range: Number(this.game.tower.range) || 0,
-            projectileSpeed: Number(this.game.tower.projectileSpeed) || 0,
-            splashRadius: Number(this.game.tower.splashRadius) || 0,
-            lightningCount: Number(this.game.tower.lightningCount) || 0,
-            lightningRange: Number(this.game.tower.lightningRange) || 0,
-            poisonDamage: Number(this.game.tower.poisonDamage) || 0,
-            poisonDuration: Number(this.game.tower.poisonDuration) || 0,
-            slowIntensity: Number(this.game.tower.slowIntensity) || 0,
-            slowDuration: Number(this.game.tower.slowDuration) || 0
-          },
-          upgrades: this.game.upgrades ? this.game.upgrades.map(u => ({ id: u.id, level: u.level })) : []
-        });
-
-        batch.set(leaderboardRef, {
-          name: name,
-          score: score,
-          timestamp: ts
-        });
-
-        await batch.commit();
-
-      } catch (e) {
-        console.warn("Could not save score to Firebase, saved locally.", e.message);
-      }
-    }
-
+    
     this.updateLeaderboard();
+  }
+
+  async submitScoreToFirebase(playerName) {
+    if (!isFirebaseEnabled) return false;
+    
+    try {
+      const userId = auth.currentUser?.uid;
+      if (!userId) throw new Error("Utilisateur non authentifié");
+      const batch = writeBatch(db);
+      const scoreRef = doc(collection(db, SCORES_COLLECTION));
+      const scoreId = scoreRef.id;
+      const leaderboardRef = doc(db, LEADERBOARD_COLLECTION, scoreId);
+      const name = String(playerName || this.game.playerName);
+      const score = Number(this.game.score);
+      const ts = serverTimestamp();
+      const clientTimestamp = new Date().toISOString();
+
+      batch.set(scoreRef, {
+        name: name,
+        score: score,
+        level: Number(this.game.level),
+        difficulty: String(this.game.difficulty || 'normal'),
+        balance: Math.floor(Number(this.game.currency)),
+        elapsedTime: Number(this.game.time),
+        userId: userId,
+        timestamp: ts,
+        client_timestamp: clientTimestamp,
+        towerStats: {
+          damage: Number(this.game.tower.damage) || 0,
+          cooldown: Number(this.game.tower.cooldown) || 0,
+          range: Number(this.game.tower.range) || 0,
+          projectileSpeed: Number(this.game.tower.projectileSpeed) || 0,
+          splashRadius: Number(this.game.tower.splashRadius) || 0,
+          lightningCount: Number(this.game.tower.lightningCount) || 0,
+          lightningRange: Number(this.game.tower.lightningRange) || 0,
+          poisonDamage: Number(this.game.tower.poisonDamage) || 0,
+          poisonDuration: Number(this.game.tower.poisonDuration) || 0,
+          slowIntensity: Number(this.game.tower.slowIntensity) || 0,
+          slowDuration: Number(this.game.tower.slowDuration) || 0
+        },
+        upgrades: this.game.upgrades ? this.game.upgrades.map(u => ({ id: u.id, level: u.level })) : []
+      });
+
+      batch.set(leaderboardRef, {
+        name: name,
+        score: score,
+        timestamp: ts
+      });
+
+      await batch.commit();
+      
+      // Update local name if changed
+      if (playerName && playerName !== this.game.playerName) {
+        this.game.playerName = playerName;
+        localStorage.setItem('tower_playerName', playerName);
+      }
+      
+      this.updateLeaderboard();
+      return true;
+
+    } catch (e) {
+      console.warn("Could not save score to Firebase.", e.message);
+      return false;
+    }
   }
 }

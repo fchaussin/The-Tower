@@ -292,7 +292,7 @@ canvas#gameCanvas {
 
 
 .menu-container h1 {
-  font-size: clamp(2rem, 0.91rem + 5.45vw, 5rem);
+  font-size: 3rem;
   letter-spacing: -0.05em;
   margin: 0;
   color: var(--accent-primary);

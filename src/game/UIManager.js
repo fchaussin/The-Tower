@@ -254,8 +254,8 @@ export class UIManager {
       if (navigator.share) {
         try {
           await navigator.share({
-            title: 'Idle Tower Defense',
-            text: 'Check out this minimalist Idle Tower Defense game!',
+            title: __APP_CONFIG__.name,
+            text: `Check out this minimalist ${__APP_CONFIG__.name} game!`,
             url: window.location.href,
           });
         } catch (err) {
@@ -417,7 +417,7 @@ export class UIManager {
   }
 
   saveScore() {
-    this.leaderboardManager.saveScore();
+    this.leaderboardManager.saveLocalScore();
   }
 
   showGameOver() {
@@ -427,12 +427,58 @@ export class UIManager {
     if (finalLevelEl) finalLevelEl.innerText = `Level: ${this.game.level}`;
     
     const gameOverMsgEl = document.getElementById('gameOverMsg');
+    const scoreSubmitSection = document.getElementById('scoreSubmitSection');
+    const playerNameInput = document.getElementById('playerNameInput');
+    const submitScoreBtn = document.getElementById('submitScoreBtn');
+    const submitScoreStatus = document.getElementById('submitScoreStatus');
+
     if (gameOverMsgEl) {
       if (isFirebaseEnabled && !auth.currentUser) {
         gameOverMsgEl.innerText = "Log in next time if you want your top score to be visible to other players!";
         gameOverMsgEl.classList.remove('hidden');
+        if (scoreSubmitSection) scoreSubmitSection.classList.add('hidden');
+      } else if (isFirebaseEnabled && auth.currentUser) {
+        gameOverMsgEl.classList.add('hidden');
+        if (scoreSubmitSection) {
+          scoreSubmitSection.classList.remove('hidden');
+          if (playerNameInput) playerNameInput.value = this.game.playerName || '';
+          if (submitScoreStatus) submitScoreStatus.classList.add('hidden');
+          
+          if (submitScoreBtn) {
+            // Remove old listeners to prevent multiple submissions
+            const newBtn = submitScoreBtn.cloneNode(true);
+            submitScoreBtn.parentNode.replaceChild(newBtn, submitScoreBtn);
+            
+            newBtn.disabled = false;
+            newBtn.innerText = 'SUBMIT SCORE';
+            
+            newBtn.addEventListener('click', async () => {
+              const name = playerNameInput.value.trim() || 'Anonymous';
+              newBtn.disabled = true;
+              newBtn.innerText = 'SUBMITTING...';
+              
+              const success = await this.leaderboardManager.submitScoreToFirebase(name);
+              
+              if (success) {
+                if (submitScoreStatus) {
+                  submitScoreStatus.innerText = 'Score submitted successfully!';
+                  submitScoreStatus.classList.remove('hidden');
+                }
+                newBtn.innerText = 'SUBMITTED';
+              } else {
+                if (submitScoreStatus) {
+                  submitScoreStatus.innerText = 'Failed to submit score.';
+                  submitScoreStatus.classList.remove('hidden');
+                }
+                newBtn.disabled = false;
+                newBtn.innerText = 'SUBMIT SCORE';
+              }
+            });
+          }
+        }
       } else {
         gameOverMsgEl.classList.add('hidden');
+        if (scoreSubmitSection) scoreSubmitSection.classList.add('hidden');
       }
     }
 

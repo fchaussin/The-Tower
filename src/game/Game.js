@@ -170,11 +170,26 @@ export class Game {
     const config = getLevelConfig(this.level, this.difficulty);
     
     if (!isRetry) {
+      // Calculate interest (e.g., 5% of current currency)
+      // We only apply interest if level > 1 to avoid giving interest on starting money before playing
+      let interestEarned = 0;
+      if (this.level > 1) {
+        const interestRate = 0.05; // 5%
+        interestEarned = Math.floor(this.currency * interestRate);
+        this.currency += interestEarned;
+      }
+
       this.currency += config.bonusCurrency || 0;
       this.levelStartCurrency = this.currency;
       this.levelStartScore = this.score;
       this.levelSnapshot = this.getSnapshot();
       this.history.push({ level: this.level, snapshot: this.levelSnapshot });
+      
+      // Display interest if earned
+      if (interestEarned > 0) {
+        // Display slightly below the level text
+        this.spawnTextEffect(this.width / 2, this.height / 2 - 40, `+${this.uiManager.formatNumber(interestEarned)} Interest (5%)`, '#0f0', 32, 2.5);
+      }
     }
     this.levelEvents = config.events;
     this.totalWaves = config.totalWaves || 0;
@@ -187,7 +202,9 @@ export class Game {
       this.audioManager.playLevelUp();
     }
     if (config.bonusCurrency > 0 && !isRetry) {
-      this.spawnTextEffect(this.width / 2, this.height / 2 - 40, `+${this.uiManager.formatNumber(config.bonusCurrency)} Bonus!`, '#fd0', 32, 2.5);
+      // Adjust position if interest was also displayed
+      const yPos = (this.level > 1 && Math.floor((this.currency - config.bonusCurrency) * 0.05) > 0) ? this.height / 2 + 20 : this.height / 2 - 40;
+      this.spawnTextEffect(this.width / 2, yPos, `+${this.uiManager.formatNumber(config.bonusCurrency)} Bonus!`, '#fd0', 32, 2.5);
     }
   }
 

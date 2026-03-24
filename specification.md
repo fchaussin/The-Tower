@@ -29,6 +29,7 @@
 *   **Currency ($):** Earned by destroying enemies.
 *   **Reward Calculation:** The base reward is proportional to the enemy's maximum health.
 *   **Multipliers:** The final reward is modified by the selected Difficulty Level.
+*   **Interest System:** At the end of each level (starting from level 2), the player earns a 5% interest bonus on their unspent currency. This introduces a risk/reward mechanic, encouraging players to save money for exponential economic growth rather than spending it immediately. The earned interest is displayed dynamically on-screen at the start of the next level and is included in the level's save snapshot.
 
 ---
 
