@@ -91,64 +91,6 @@
 <div id="game-container">
   <canvas id="gameCanvas"></canvas>
 
-  <div id="pwa-enforcer-overlay" class="hidden" style="position: fixed; inset: 0; background-color: #111; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; color: #fff; font-family: monospace;">
-    <img src="/icon.svg?v=3" alt="Logo" style="width: 100px; height: 100px; margin-bottom: 20px; border-radius: 20px; box-shadow: 0 0 20px rgba(66, 135, 245, 0.5);" />
-    <h1 id="pwa-enforcer-title" style="font-size: 2rem; margin-bottom: 10px; color: #0df;">Install Required</h1>
-    <p id="pwa-enforcer-desc" style="font-size: 1.1rem; max-width: 400px; line-height: 1.5; margin-bottom: 30px; color: #aaa;">
-      To play on mobile, you must install the game to your home screen. This ensures a smooth, full-screen experience.
-    </p>
-
-    <div id="pwa-open-container" class="hidden" style="width: 100%; max-width: 350px; margin-bottom: 20px;">
-      <p id="pwa-open-desc" style="margin: 0 0 10px 0; color: #ddd; font-size: 0.9rem; line-height: 1.6; text-align: center;">
-        If the game is <strong>already installed</strong>:
-      </p>
-      <a id="pwa-open-btn" href="#" class="btn" style="display: block; width: 100%; padding: 12px; background: #4caf50; color: #fff; border: none; border-radius: 8px; font-weight: bold; font-size: 1.1rem; text-align: center; text-decoration: none; box-sizing: border-box;">OPEN APP</a>
-    </div>
-    
-    <div id="pwa-instructions-ios" class="hidden" style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; max-width: 350px;">
-      <p style="margin: 0 0 10px 0; font-weight: bold;">On iOS (Safari):</p>
-      <ol style="text-align: left; margin: 0; padding-left: 20px; color: #ddd; line-height: 1.6;">
-        <li>Tap the <strong>Share</strong> icon <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg> at the bottom.</li>
-        <li>Scroll down and select <strong>"Add to Home Screen"</strong> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>.</li>
-        <li>Launch the game from your home screen!</li>
-      </ol>
-    </div>
-
-    <div id="pwa-instructions-android" class="hidden" style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; max-width: 350px;">
-      <p style="margin: 0 0 10px 0; font-weight: bold;">On Android:</p>
-      
-      <div id="pwa-prompt-available" class="hidden">
-        <p style="margin: 0 0 15px 0; color: #ddd; font-size: 0.9rem;">Tap the button below to install the game on your device.</p>
-        <button id="pwa-install-btn" class="btn" style="width: 100%; padding: 12px; background: #0df; color: #000; border: none; border-radius: 8px; font-weight: bold; font-size: 1.1rem; cursor: pointer;">INSTALL GAME</button>
-      </div>
-      
-      <div id="pwa-prompt-unavailable">
-        <p style="margin: 0 0 15px 0; color: #ddd; font-size: 0.9rem; line-height: 1.6; text-align: left;">
-          <em>If the "OPEN APP" button fails:</em><br>
-          &rarr; Open browser menu (⋮)<br>
-          &rarr; Select <strong>"Open __APP_SHORT_NAME__"</strong>
-        </p>
-        <p style="margin: 0; color: #ddd; font-size: 0.9rem; line-height: 1.6; text-align: left;">
-          To install it manually:<br>
-          &rarr; Open browser menu (⋮)<br>
-          &rarr; Select <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong>
-        </p>
-      </div>
-    </div>
-  </div>
-
-  <div id="desktop-enforcer-overlay" class="hidden" style="position: fixed; inset: 0; background-color: #111; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; color: #fff; font-family: monospace;">
-    <img src="/icon.svg?v=3" alt="Logo" style="width: 100px; height: 100px; margin-bottom: 20px; border-radius: 20px; box-shadow: 0 0 20px rgba(66, 135, 245, 0.5);" />
-    <h1 style="font-size: 2rem; margin-bottom: 10px; color: #0df;">Mobile Game Only</h1>
-    <p style="font-size: 1.1rem; max-width: 400px; line-height: 1.5; margin-bottom: 30px; color: #aaa;">
-      __APP_NAME__ is designed exclusively for mobile devices. Scan this QR code with your phone to play!
-    </p>
-    <div style="background: white; padding: 10px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 0 15px rgba(255,255,255,0.2);">
-      <canvas id="desktop-qr-code"></canvas>
-    </div>
-    <p style="color: #888; font-size: 0.9rem;">Don't forget to install the app once on your mobile device.</p>
-  </div>
-
   <div id="ui-layer">
     <div id="menu-backdrop" class="menu-backdrop hidden"></div>
     

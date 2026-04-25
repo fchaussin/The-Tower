@@ -3,6 +3,7 @@ import { getLevelConfig, DIFFICULTY_LEVELS } from './Levels.js';
 import { Shockwave } from './Shockwave.js';
 import { TextEffect } from './TextEffect.js';
 import { LightningEffect } from './LightningEffect.js';
+import { ChainLightning } from './ChainLightning.js';
 import { SplashEffect } from './SplashEffect.js';
 import { DamageFeature } from './features/DamageFeature.js';
 import { RangeFeature } from './features/RangeFeature.js';
@@ -17,6 +18,7 @@ import { UIManager } from './UIManager.js';
 import { Renderer } from './Renderer.js';
 import { NotificationManager } from './NotificationManager.js';
 import { Simulator } from './Simulator.js';
+import { IconRenderer } from './IconRenderer.js';
 
 export const GAME_STATES = {
   MENU: 'MENU',
@@ -49,6 +51,8 @@ export class Game {
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState !== 'visible' && this.state === GAME_STATES.PLAYING) {
         this.updateState(GAME_STATES.PAUSED);
+      } else if (document.visibilityState === 'visible') {
+        IconRenderer.clearCache();
       }
     });
     
@@ -99,6 +103,7 @@ export class Game {
 
   
   resize() {
+    IconRenderer.clearCache();
     this.width = this.canvas.width = window.innerWidth;
     this.height = this.canvas.height = window.innerHeight;
     if (this.tower) {
@@ -135,6 +140,7 @@ export class Game {
     this.shockwaves = [];
     this.textEffects = [];
     this.lightningEffects = [];
+    this.chainLightnings = [];
     this.splashEffects = [];
     this.flashes = [];
     this.currency = 0;
@@ -167,6 +173,7 @@ export class Game {
   }
 
   startLevel(isRetry = false) {
+    IconRenderer.clearCache();
     const config = getLevelConfig(this.level, this.difficulty);
     
     if (!isRetry) {
@@ -241,6 +248,7 @@ export class Game {
     this.shockwaves = [];
     this.textEffects = [];
     this.lightningEffects = [];
+    this.chainLightnings = [];
     this.splashEffects = [];
     this.flashes = [];
     
@@ -321,6 +329,15 @@ export class Game {
 
   spawnLightningEffect(x1, y1, x2, y2, color = '#0ff', duration = 0.2) {
     this.lightningEffects.push(new LightningEffect(x1, y1, x2, y2, color, duration));
+  }
+
+  spawnChainLightning(x, y, damage, tower, hitEnemies) {
+    const cl = new ChainLightning(x, y, damage, tower, hitEnemies, tower.lightningCount, 1);
+    cl.nextTarget = cl.findTarget(this);
+    if (cl.nextTarget) {
+      cl.chainDelay = 0.15 * Math.pow(0.5, cl.hitIndex);
+      this.chainLightnings.push(cl);
+    }
   }
 
   spawnSplashEffect(x, y, color, radius, duration, intensity = 1.0) {
@@ -405,6 +422,7 @@ export class Game {
     this.shockwaves.forEach(s => s.update(dt));
     this.textEffects.forEach(t => t.update(dt));
     this.lightningEffects.forEach(c => c.update(dt));
+    this.chainLightnings.forEach(cl => cl.update(dt, this));
     this.splashEffects.forEach(s => s.update(dt));
     this.flashes.forEach(f => f.life -= dt);
     
@@ -413,6 +431,7 @@ export class Game {
     this.shockwaves = this.shockwaves.filter(s => !s.markedForDeletion);
     this.textEffects = this.textEffects.filter(t => !t.markedForDeletion);
     this.lightningEffects = this.lightningEffects.filter(c => !c.markedForDeletion);
+    this.chainLightnings = this.chainLightnings.filter(cl => !cl.markedForDeletion);
     this.splashEffects = this.splashEffects.filter(s => !s.markedForDeletion);
     this.flashes = this.flashes.filter(f => f.life > 0);
   }

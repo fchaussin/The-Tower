@@ -1,6 +1,10 @@
 export class IconRenderer {
   static cache = new Map();
 
+  static clearCache() {
+    this.cache.clear();
+  }
+
   static render(ctx, iconDef, x, y, w, h, color) {
     if (!iconDef) return;
     

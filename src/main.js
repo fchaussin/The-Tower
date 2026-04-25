@@ -1,7 +1,5 @@
 import './index.css';
 import { Game } from './game/Game.js';
-import { UAParser } from 'ua-parser-js';
-import QRCode from 'qrcode';
 
 let deferredPrompt;
 
@@ -14,151 +12,18 @@ window.addEventListener('beforeinstallprompt', (e) => {
   document.querySelectorAll('.installAppBtn').forEach(btn => {
     btn.classList.remove('hidden');
   });
-  
-  // Update the enforcer overlay title and description
-  const enforcerTitle = document.getElementById('pwa-enforcer-title');
-  const enforcerDesc = document.getElementById('pwa-enforcer-desc');
-  if (enforcerTitle) enforcerTitle.innerText = 'Install Required';
-  if (enforcerDesc) enforcerDesc.innerText = 'To play on mobile, you must install the game to your home screen. This ensures a smooth, full-screen experience.';
-
-  // Show the specific Android install button in the enforcer overlay
-  const promptAvailable = document.getElementById('pwa-prompt-available');
-  const promptUnavailable = document.getElementById('pwa-prompt-unavailable');
-  if (promptAvailable) promptAvailable.classList.remove('hidden');
-  if (promptUnavailable) promptUnavailable.classList.add('hidden');
 });
 
 window.addEventListener('appinstalled', () => {
   console.log('App installed successfully');
-  
-  const enforcerTitle = document.getElementById('pwa-enforcer-title');
-  const enforcerDesc = document.getElementById('pwa-enforcer-desc');
-  if (enforcerTitle) enforcerTitle.innerText = 'App Installed';
-  if (enforcerDesc) enforcerDesc.innerText = 'Game installed successfully! Please launch it from your home screen to play.';
-
-  const promptAvailable = document.getElementById('pwa-prompt-available');
-  const promptUnavailable = document.getElementById('pwa-prompt-unavailable');
-  const instructionsIos = document.getElementById('pwa-instructions-ios');
-  const instructionsAndroid = document.getElementById('pwa-instructions-android');
-  const pwaOpenContainer = document.getElementById('pwa-open-container');
-  
-  if (promptAvailable) promptAvailable.classList.add('hidden');
-  if (promptUnavailable) promptUnavailable.classList.add('hidden');
-  if (instructionsIos) instructionsIos.classList.add('hidden');
-  if (instructionsAndroid) instructionsAndroid.classList.add('hidden');
-  
-  if (pwaOpenContainer) {
-    pwaOpenContainer.classList.remove('hidden');
-    const pwaOpenDesc = document.getElementById('pwa-open-desc');
-    if (pwaOpenDesc) {
-      pwaOpenDesc.innerHTML = '<strong>Launch the game now:</strong>';
-    }
-  }
+  document.querySelectorAll('.installAppBtn').forEach(btn => {
+    btn.classList.add('hidden');
+  });
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-  // --- PWA ENFORCER LOGIC ---
-  const parser = new UAParser();
-  const device = parser.getDevice();
-  const os = parser.getOS();
-  
-  const isMobileDevice = device.type === 'mobile' || device.type === 'tablet' || device.type === 'wearable';
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                       window.matchMedia('(display-mode: fullscreen)').matches || 
-                       window.navigator.standalone;
+  // --- PWA ENFORCER LOGIC REMOVED ---
 
-  // If it's a desktop device, block the game and show QR code
-  if (!isMobileDevice) {
-    const desktopOverlay = document.getElementById('desktop-enforcer-overlay');
-    if (desktopOverlay) {
-      desktopOverlay.classList.remove('hidden');
-      
-      const qrCanvas = document.getElementById('desktop-qr-code');
-      if (qrCanvas) {
-        QRCode.toCanvas(qrCanvas, window.location.href, {
-          width: 200,
-          margin: 2,
-          color: {
-            dark: '#000000',
-            light: '#ffffff'
-          }
-        }, function (error) {
-          if (error) console.error(error);
-        });
-      }
-    }
-    
-    // Hide the splash screen immediately so the overlay is visible
-    const splashScreen = document.getElementById('splash-screen');
-    if (splashScreen) {
-      splashScreen.style.display = 'none';
-    }
-    
-    // Stop execution here, don't initialize the game
-    return;
-  }
-
-  // If it's a mobile device and NOT running as a standalone PWA, block the game
-  if (isMobileDevice && !isStandalone) {
-    const enforcerOverlay = document.getElementById('pwa-enforcer-overlay');
-    if (enforcerOverlay) {
-      enforcerOverlay.classList.remove('hidden');
-      
-      // Show the open app container
-      const pwaOpenContainer = document.getElementById('pwa-open-container');
-      if (pwaOpenContainer) {
-        pwaOpenContainer.classList.remove('hidden');
-      }
-      
-      // Show OS-specific instructions
-      if (os.name === 'iOS' || os.name === 'Mac OS') {
-        document.getElementById('pwa-instructions-ios')?.classList.remove('hidden');
-      } else {
-        document.getElementById('pwa-instructions-android')?.classList.remove('hidden');
-      }
-    }
-    
-    // Hide the splash screen immediately so the overlay is visible
-    const splashScreen = document.getElementById('splash-screen');
-    if (splashScreen) {
-      splashScreen.style.display = 'none';
-    }
-    
-    // Handle the Android install button in the overlay
-    const pwaInstallBtn = document.getElementById('pwa-install-btn');
-    if (pwaInstallBtn) {
-      pwaInstallBtn.addEventListener('click', async () => {
-        if (deferredPrompt) {
-          deferredPrompt.prompt();
-          const { outcome } = await deferredPrompt.userChoice;
-          if (outcome === 'accepted') {
-            console.log('User accepted the install prompt');
-          } else {
-            console.log('User dismissed the install prompt');
-          }
-          deferredPrompt = null;
-        }
-      });
-    }
-    
-    // Handle the Android open button
-    const pwaOpenBtn = document.getElementById('pwa-open-btn');
-    if (pwaOpenBtn) {
-      const host = window.location.host;
-      if (os.name === 'Android') {
-        pwaOpenBtn.href = `intent://${host}#Intent;scheme=https;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;end`;
-      } else {
-        pwaOpenBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          window.open(`https://${host}`, '_blank');
-        });
-      }
-    }
-    
-    // Stop execution here, don't initialize the game
-    return;
-  }
-  // --- END PWA ENFORCER LOGIC ---
 
   const canvas = document.getElementById('gameCanvas');
   const game = new Game(canvas);
@@ -192,6 +57,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Auto-fullscreen for PWA on first interaction
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                       window.matchMedia('(display-mode: fullscreen)').matches || 
+                       window.navigator.standalone;
   if (isStandalone) {
     const requestFS = () => {
       if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
