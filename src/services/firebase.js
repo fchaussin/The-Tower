@@ -17,7 +17,10 @@ let db = null;
 let provider = null;
 let isFirebaseEnabled = false;
 
-if (firebaseConfig.apiKey) {
+// Check if we disabled firebase for CodePen
+const isFirebaseDisabled = typeof __DISABLE_FIREBASE__ !== 'undefined' && __DISABLE_FIREBASE__;
+
+if (!isFirebaseDisabled && firebaseConfig.apiKey) {
   try {
     app = initializeApp(firebaseConfig);
     auth = getAuth(app);
@@ -29,8 +32,12 @@ if (firebaseConfig.apiKey) {
     console.error("Firebase initialization failed. Services will not load.", error);
   }
 } else {
-  const error = new Error("Missing VITE_FIREBASE_API_KEY in environment variables.");
-  console.warn("Firebase and OAuth services did not load.", error);
+  if (isFirebaseDisabled) {
+    console.log("Firebase disabled for this build.");
+  } else {
+    const error = new Error("Missing VITE_FIREBASE_API_KEY in environment variables.");
+    console.warn("Firebase and OAuth services did not load.", error);
+  }
 }
 
 const SCORES_COLLECTION = 'itd_scores'; // game (full details) : write only

@@ -15,7 +15,44 @@ try {
 }
 
 const distDir = path.resolve(__dirname, '../dist-codepen');
-const jsCode = fs.readFileSync(path.resolve(distDir, 'codepen.js'), 'utf-8');
+
+// Read metadata dynamically
+const metadataPath = path.resolve(__dirname, '../metadata.json');
+let metadata = { name: '', description: '' };
+try {
+  if (fs.existsSync(metadataPath)) {
+    metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf-8'));
+  }
+} catch (e) {
+  console.error('Failed to read metadata.json', e);
+}
+
+const appConfig = {
+  name: metadata.name || 'Idle Tower Defense',
+  shortName: metadata.name === 'Idle Tower Defense' ? 'Idle TD' : (metadata.name ? metadata.name.substring(0, 12) : 'Idle TD'),
+  description: metadata.description || 'A minimalist tower defense game',
+  themeColor: '#111111',
+  backgroundColor: '#111111'
+};
+
+const injectionCode = `// --- GLOBAL CONFIGURATION ---
+const __APP_CONFIG__ = ${JSON.stringify(appConfig, null, 2)};
+const __DISABLE_FIREBASE__ = true;
+// ----------------------------
+
+`;
+
+const rawJsCode = fs.readFileSync(path.resolve(distDir, 'codepen.js'), 'utf-8');
+const jsCode = injectionCode + rawJsCode;
+
+fs.writeFileSync(path.resolve(distDir, 'codepen.js'), jsCode);
+
+let cssCode = '';
+try {
+  cssCode = fs.readFileSync(path.resolve(distDir, 'style.css'), 'utf-8');
+} catch (e) {
+  console.error('Warning: could not find style.css');
+}
 
 const indexHtml = fs.readFileSync(path.resolve(__dirname, '../index.html'), 'utf-8');
 
@@ -32,7 +69,7 @@ const penData = {
   title: "Idle Tower Defense",
   description: "Exported from AI Studio",
   html: htmlCode,
-  css: "/* CSS is injected via JS in this build */",
+  css: cssCode,
   js: jsCode,
   editors: "101", // Show HTML and JS
 };
@@ -54,7 +91,7 @@ const outputHtml = `
 <body>
   <div class="container">
     <h1>Your CodePen Build is Ready!</h1>
-    <p>We've compiled all your JavaScript, injected your CSS directly, and formatted your HTML for CodePen.</p>
+    <p>We've compiled all your JavaScript, extracted your CSS, and formatted your HTML for CodePen.</p>
     <form action="https://codepen.io/pen/define" method="POST" target="_blank">
       <input type="hidden" name="data" value='${JSON.stringify(penData).replace(/'/g, "&apos;")}'>
       <button type="submit">🚀 Open in CodePen</button>
@@ -63,6 +100,7 @@ const outputHtml = `
     <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #444; color: #888; font-size: 0.9em;">
        <p>If the button above fails (CodePen has a size limit for auto-imports), you can manually copy the files:</p>
        <a href="./codepen.js" target="_blank" style="color: #4caf50; text-decoration: none;">View codepen.js</a> |
+       <a href="./style.css" target="_blank" style="color: #4caf50; text-decoration: none;">View style.css</a> |
        <a href="../index.html" target="_blank" style="color: #4caf50; text-decoration: none;">View original HTML</a>
     </div>
   </div>
