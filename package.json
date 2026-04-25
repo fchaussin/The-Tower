@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:codepen": "node scripts/export-codepen.js",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -16,6 +17,7 @@
   "devDependencies": {
     "javascript-obfuscator": "^5.4.1",
     "vite": "^5.1.4",
+    "vite-plugin-css-injected-by-js": "^5.0.1",
     "vite-plugin-javascript-obfuscator": "^3.1.0"
   }
 }
