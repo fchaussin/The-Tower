@@ -1,5 +1,7 @@
 # Idle Tower Defense
 
+🎮 **[Play the game here!](https://ais-pre-ltoq4f4e3vwojh4szegwin-17490180153.europe-west1.run.app/)**
+
 A minimalist, highly addictive browser-based tower defense game built with HTML5 Canvas and vanilla JavaScript. Defend your central tower against endless waves of increasingly difficult geometric enemies!
 
 ## Features
